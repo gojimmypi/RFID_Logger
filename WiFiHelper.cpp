@@ -5,10 +5,18 @@
 //#include <ESP8266HTTPClient.h> // includes WiFiClient.h
 //#include <ESP8266WiFi.h>
 
+
 #undef FOUND_BOARD
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+
+extern "C" {
+#include "user_interface.h"
+#include "wpa2_enterprise.h"
+}
 #define FOUND_BOARD ESP8266
 #endif
 
@@ -29,6 +37,44 @@ String wifiMacAddress() {
     return myMacAddress;
 }
 
+void WiFiStart(bool EnterpriseMode = false) {
+	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
+	WIFI_DEBUG_PRINT("wifiConnect: Connecting to ");
+	WIFI_DEBUG_PRINTLN(WIFI_SSID);
+	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
+
+	if (EnterpriseMode) {
+		// WPA2 Connection starts here
+		// Setting ESP into STATION mode only (no AP mode or dual mode)
+
+#ifdef ARDUINO_ARCH_ESP8266
+		wifi_set_opmode(STATION_MODE);
+
+		struct station_config wifi_config;
+		memset(&wifi_config, 0, sizeof(wifi_config));
+		strcpy((char*)wifi_config.ssid, SECRET_WIFI_SSID);
+
+		wifi_station_set_config(&wifi_config);
+
+		wifi_station_clear_cert_key();
+		wifi_station_clear_enterprise_ca_cert();
+		wifi_station_set_wpa2_enterprise_auth(1);
+		wifi_station_set_enterprise_identity((uint8*)EAP_ID, strlen(SECRET_EAP_ID));
+		wifi_station_set_enterprise_username((uint8*)EAP_USERNAME, strlen(SECRET_EAP_USERNAME));
+		wifi_station_set_enterprise_password((uint8*)EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD));
+		wifi_station_connect();
+		// WPA2 Connection ends here
+#endif
+	}
+	else {
+		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
+		WiFi.mode(WIFI_STA);
+		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
+		WiFi.begin(WIFI_SSID, WIFI_PWD);
+		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
+	}
+}
+
 //*******************************************************************************************************************************************
 // wifiConnect 
 // 
@@ -36,17 +82,9 @@ String wifiMacAddress() {
 //
 //*******************************************************************************************************************************************
 int wifiConnect(int maxAttempts) {
-	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
-	WIFI_DEBUG_PRINT("wifiConnect: Connecting to ");
-	WIFI_DEBUG_PRINTLN(WIFI_SSID);
-	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
-
 	int countAttempt = 0;
-	HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
-	WiFi.mode(WIFI_STA);
-	HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
-	WiFi.begin(WIFI_SSID, WIFI_PWD);
-	HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
+	WiFiStart(false);
+
 
 	myMacAddress = WiFi.macAddress(); // this returns 6 hex bytes, delimited by colons
 
@@ -66,10 +104,11 @@ int wifiConnect(int maxAttempts) {
 			WIFI_DEBUG_PRINTLN("WiFi Retrying. ");
 			WiFi.mode(WIFI_STA);
 			WiFi.begin(WIFI_SSID, WIFI_PWD);
+			// TODO reboot?
 		}
 	}
 	WIFI_DEBUG_PRINTLN("Connected!");
-	delay(5000);
+	delay(5000); // TODO why wait?
 	myMacAddress.replace(":", "");
 	myMacAddress.replace("-", ""); // probably not used, but just in case they MAC address starts returning other well known delimiters such as dash
 	myMacAddress.replace(" ", ""); // or perhaps even a space
