@@ -5,6 +5,7 @@
 #include <SPI.h>
 #include <MFRC522.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include "GlobalDefine.h"
 #include "WiFiHelper.h"
 #include "sslHelper.h"
@@ -16,10 +17,13 @@
 
 
 // Initialize the Wi-Fi client library
-WiFiClient client;
+// WiFiClient client;
+// Use WiFiClientSecure class to create TLS connection
+WiFiClientSecure client;
+
 
 // Initialize our FRID reader with a single instance:
-MFRC522 rfid(SS_PIN, RST_PIN);  
+MFRC522 rfid(SS_PIN, RST_PIN);
 
 // Initialize our RFID key will be found (new CARDSN/UID values found here)
 MFRC522::MIFARE_Key key;
@@ -71,7 +75,7 @@ bool IsCardReady() {
 void loop() {
 
 	// check to see if we have a card
-	if (IsCardReady) {
+	if (IsCardReady()) {
 
 		Serial.print(F("Detected UID: "));
 		printHex(rfid.uid.uidByte, rfid.uid.size);
