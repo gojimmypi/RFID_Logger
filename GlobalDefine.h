@@ -16,7 +16,7 @@
 //*******************************************************************************************************************************************
 // Note .RFID_Logger.vsarduino.h is ignored at compile time!
 //
-#define ARDUINO_ARCH_ESP32
+#define ARDUINO_ARCH_ESP8266
 
 // My config is stored in myPrivateSettings.h file 
 // if you choose not to use such a file, set this to false:
@@ -29,7 +29,7 @@
 #pragma message(Reminder "Settings needed !")
 // create your own myPrivateSettings.h, or update the following lines:
 static const char* SECRET_WIFI_SSID = "my-wifi-SSID"
-static const bool IS_EAP = false; // set to true for enterprise access point authentication, otherwise false for regular wifi
+static const bool IS_EAP = true; // set to true for enterprise access point authentication, otherwise false for regular wifi
 
 static const char* SECRET_WIFI_PWD = "my-WiFi-PASSWORD";     // SSID password for regular Wi-Fi; user password for enterprise 
 static const char* SECRET_WIFI_USERNAME = "my-WiFi-USERNAME" // for enterprise logins

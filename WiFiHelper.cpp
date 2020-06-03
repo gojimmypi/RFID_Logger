@@ -10,9 +10,6 @@
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
-
 extern "C" {
 #include "user_interface.h"
 #include "wpa2_enterprise.h"
@@ -40,14 +37,21 @@ String wifiMacAddress() {
 void WiFiStart(bool EnterpriseMode = false) {
 	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
 	WIFI_DEBUG_PRINT("wifiConnect: Connecting to ");
-	WIFI_DEBUG_PRINTLN(WIFI_SSID);
+	WIFI_DEBUG_PRINTLN(SECRET_WIFI_SSID);
 	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
 
+#ifdef ARDUINO_ARCH_ESP8266
+	Serial.println("ARDUINO_ARCH_ESP8266");
+#endif
 	if (EnterpriseMode) {
 		// WPA2 Connection starts here
 		// Setting ESP into STATION mode only (no AP mode or dual mode)
+		Serial.println("Starting Enterprise...");
 
 #ifdef ARDUINO_ARCH_ESP8266
+	// WPA2 Connection starts here
+	// Setting ESP into STATION mode only (no AP mode or dual mode)
+		Serial.println("Starting ESP8266 Enterprise...");
 		wifi_set_opmode(STATION_MODE);
 
 		struct station_config wifi_config;
@@ -59,18 +63,19 @@ void WiFiStart(bool EnterpriseMode = false) {
 		wifi_station_clear_cert_key();
 		wifi_station_clear_enterprise_ca_cert();
 		wifi_station_set_wpa2_enterprise_auth(1);
-		wifi_station_set_enterprise_identity((uint8*)EAP_ID, strlen(SECRET_EAP_ID));
-		wifi_station_set_enterprise_username((uint8*)EAP_USERNAME, strlen(SECRET_EAP_USERNAME));
-		wifi_station_set_enterprise_password((uint8*)EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD));
+		wifi_station_set_enterprise_identity((uint8*)SECRET_EAP_ID, strlen(SECRET_EAP_ID));
+		wifi_station_set_enterprise_username((uint8*)SECRET_EAP_USERNAME, strlen(SECRET_EAP_USERNAME));
+		wifi_station_set_enterprise_password((uint8*)SECRET_EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD));
 		wifi_station_connect();
 		// WPA2 Connection ends here
 #endif
 	}
 	else {
+		Serial.println("Starting regular Wi-Fi...");
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
 		WiFi.mode(WIFI_STA);
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
-		WiFi.begin(WIFI_SSID, WIFI_PWD);
+		WiFi.begin(SECRET_WIFI_SSID, WIFI_PWD);
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
 	}
 }
@@ -83,7 +88,7 @@ void WiFiStart(bool EnterpriseMode = false) {
 //*******************************************************************************************************************************************
 int wifiConnect(int maxAttempts) {
 	int countAttempt = 0;
-	WiFiStart(false);
+	WiFiStart(IS_EAP);
 
 
 	myMacAddress = WiFi.macAddress(); // this returns 6 hex bytes, delimited by colons
@@ -95,16 +100,22 @@ int wifiConnect(int maxAttempts) {
 
 		WIFI_DEBUG_PRINT(".");
 		delay(250);
-		countAttempt++;
-		if (countAttempt > maxAttempts) {
-			countAttempt = 0;
-			WIFI_DEBUG_PRINTLN("WiFi Disconnect... ");
-			WiFi.disconnect();
-			delay(5000);
-			WIFI_DEBUG_PRINTLN("WiFi Retrying. ");
-			WiFi.mode(WIFI_STA);
-			WiFi.begin(WIFI_SSID, WIFI_PWD);
-			// TODO reboot?
+        if (IS_EAP) {
+			// TODO - do we ever give up on EAP?
+        }
+        else
+        {
+            countAttempt++;
+            if (countAttempt > maxAttempts) {
+				countAttempt = 0;
+				WIFI_DEBUG_PRINTLN("WiFi Disconnect... ");
+				WiFi.disconnect();
+				delay(5000);
+				WIFI_DEBUG_PRINTLN("WiFi Retrying. ");
+				WiFi.mode(WIFI_STA);
+				WiFi.begin(SECRET_WIFI_SSID, WIFI_PWD);
+				// TODO reboot?
+			}
 		}
 	}
 	WIFI_DEBUG_PRINTLN("Connected!");

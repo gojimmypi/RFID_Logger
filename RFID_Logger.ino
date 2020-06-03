@@ -4,7 +4,7 @@
 
 #include <SPI.h>
 #include <MFRC522.h>
-#include <WiFi.h>
+// #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "GlobalDefine.h"
 #include "WiFiHelper.h"
