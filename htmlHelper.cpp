@@ -25,23 +25,49 @@
 #pragma message(Reminder "Error Target hardware not defined !")
 #endif // ! FOUND_BOARD
 
+
+// ensure there are no unprintable characters (including space) in the url 
+String HTML_CleanURL(String url) {
+    String res = "";
+    String thisChar = "";
+    for (size_t i = 0; i < url.length(); i++)
+    {
+        thisChar = url.substring(i, i + 1);
+        if ((thisChar > " ") && (thisChar <= "~") ) {
+            res = res + thisChar;
+        }
+    }
+    return res;
+}
+
+// generate a request block from the given url
 String HTML_RequestText(String url) {
+    if (url == "") {
+        Serial.println("HTML_RequestText empty URL!");
+    }
+    url = HTML_CleanURL(url);
     return String("GET ") + url + " HTTP/1.1\r\n" +
         "Host: " + SECRET_APP_HOST + "\r\n" +
         "Accept-Language: en-US\r\n" +
-        "User-Agent: HA_RFID\r\n" +
-        "Connection: Keep-Alive\r\n\r\n";
+        "User-Agent: ESP32_RFID\r\n" +
+        "Connection: keep-alive\r\n\r\n"; // we may need to follow a 302; see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Connection
 }
 
+// send html request TheRequest to thisClient, return 302 move url in MovedToURL as needed
 void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& MovedToURL) {
     Serial.println("HTML_SendRequest");
+    Serial.println("");
+    Serial.println(TheRequest);
+    Serial.println("");
     MovedToURL = "";
+    (*thisClient).flush();
+    yield();
     (*thisClient).print(TheRequest);
-    Serial.println("moved request sent");
+    Serial.println("Request sent");
     while ((*thisClient).connected()) {
         String line = (*thisClient).readStringUntil('\n');
         if (line.startsWith("Location:")) {
-            MovedToURL = line.substring(9);
+            MovedToURL = line.substring(10); // note that this will include improper trailing \n\r chars, cleaned later
         }
         Serial.println(line);
         if (line == "\r") {
@@ -49,12 +75,56 @@ void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& M
             break;
         }
     }
-    String line = (*thisClient).readStringUntil('\n');
+    String line;
+
+    Serial.println("reply:");
+    Serial.println("==========");
     Serial.println(line);
 
-    Serial.println("reply was:");
+    while ((*thisClient).available()) {
+        line = (*thisClient).readStringUntil('\n');
+        Serial.println(line);
+        yield();
+    }
+
     Serial.println("==========");
-    Serial.println(line);
-    Serial.println("==========");
+    // (*thisClient).flush();
+    yield();
+    Serial.println("");
+    Serial.println("End HTML_SendRequest");
+    Serial.println("");
+}
+
+// the non-public HTML_SendRequestFollowMove that keeps track of MoveDepth
+void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest, String& MovedToURL, int MoveDepth ) {
+    Serial.println("HTML_SendRequestFollowMove=");
+
+    HTML_SendRequest(thisClient, TheRequest, MovedToURL);
+
+    Serial.print("thisMovedRequestURL=");
+    Serial.println(MovedToURL);
+    if (MovedToURL == "") {
+        Serial.println("No move!");
+    }
+    else {
+        Serial.print("Doing move! Depth = ");
+        Serial.println(MoveDepth);
+
+        //url = "/RFID/default?UID=00000000"; // thisMovedRequestURL; // typically the default.aspx with the ".aspx" removed (weird) 
+        String newurl = MovedToURL; // our new url is the one that returned as a new address
+        MovedToURL = ""; // we'll reset the moved address as a parameter
+        String thisMovedRequest = HTML_RequestText(newurl); // generate a new regest from this newurl
+
+        // we'll only recursively follow up to 10 moves. (typically there's only one, such as default.aspx moved to default    
+        if (MoveDepth < 10) {
+            HTML_SendRequestFollowMove(thisClient, thisMovedRequest, MovedToURL, MoveDepth + 1);
+        }
+    }
 
 }
+
+// Send HTML TheRequest to thisClient, following 302 moves up to 10 deep; we'll start at 0
+void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest, String& MovedToURL) {
+    HTML_SendRequestFollowMove(thisClient, TheRequest, MovedToURL, 0);
+}
+

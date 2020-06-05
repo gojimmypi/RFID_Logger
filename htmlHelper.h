@@ -30,5 +30,6 @@
 
 String HTML_RequestText(String url);
 void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& MovedToURL);
+void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest, String& MovedToURL); // will follow 302 moves up to 10 times
 
-#endif
+#endif // _HTMLHELPER_h

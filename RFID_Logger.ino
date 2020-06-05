@@ -57,17 +57,60 @@ MFRC522::MIFARE_Key key;
 byte nuidPICC[4];
 
 int SaveUID(String thisUID) {
+
 	if (thisUID) {
-		String url = "/RFID/default?UID=" + thisUID; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
+		if (!client.connect(SECRET_APP_HOST, APP_HTTPS_PORT)) {
+			Serial.println("client.connect failed; check firewall on receiver");
+			return 2;
+		}
+
+
+		Serial.println("Saving UID");
+		String url = "/RFID/default.aspx?UID=" + thisUID; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
 		String thisRequest = HTML_RequestText(url);
-		String thisMovedRequest = "";
-		HTML_SendRequest(&client, thisRequest, thisMovedRequest);
+		String thisMovedRequestURL = "";
+		HTML_SendRequestFollowMove(&client, thisRequest, thisMovedRequestURL);
+
+		//String MovedToURL;
+
+		//(client).print(thisRequest);
+		//Serial.println("");
+		//Serial.println("the request:");
+		//Serial.println(thisRequest);
+		//Serial.println("");
+
+
+		//Serial.println("request sent");
+		//while ((client).connected()) {
+		//	String line = (client).readStringUntil('\n');
+		//	if (line.startsWith("Location:")) {
+		//		MovedToURL = line.substring(9);
+		//	}
+		//	Serial.println(line);
+		//	if (line == "\r") {
+		//		Serial.println("headers received");
+		//		break;
+		//	}
+		//}
+		//String line = (client).readStringUntil('\n');
+		//Serial.println(line);
+
+		//Serial.println("reply was:");
+		//Serial.println("==========");
+		//Serial.println(line);
+		//Serial.println("==========");
+
+
 		return 0;
 	}
 	else {
 		return 1;
 	}
 }
+
+#ifdef _MSC_VER
+#pragma region helpers
+#endif
 
 static const char* HEX_CHARS = "0123456789ABCDEF";
 String UID_Hex(byte* buffer, byte bufferSize) {
@@ -99,6 +142,10 @@ void printDec(byte* buffer, byte bufferSize) {
 	}
 }
 
+#ifdef _MSC_VER
+#pragma endregion helpers
+#endif
+ 
 
 
 void setup() {
@@ -115,7 +162,10 @@ void setup() {
 	//}
 
 	wifiConnect(50);
-	testSSL();
+
+	SaveUID("00000000"); // save a marker at startup time
+
+	// testSSL();
 
 	SPI.begin(); // Init SPI bus
 	rfid.PCD_Init(); // Init MFRC522 
@@ -128,7 +178,6 @@ void setup() {
 	Serial.print(F("Using the following key:"));
 	printHex(key.keyByte, MFRC522::MF_KEY_SIZE);
 
-	SaveUID("00000000"); // save a marker at startup time
 }
 
 bool IsCardReady() {
