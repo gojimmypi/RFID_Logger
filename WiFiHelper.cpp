@@ -20,6 +20,8 @@ extern "C" {
 #ifdef ARDUINO_ARCH_ESP32
 #include <HTTPClient.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include "esp_wpa2.h"
 #define FOUND_BOARD ESP32
 #endif
 
@@ -40,18 +42,22 @@ void WiFiStart(bool EnterpriseMode = false) {
 	WIFI_DEBUG_PRINTLN(SECRET_WIFI_SSID);
 	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
 
+
 #ifdef ARDUINO_ARCH_ESP8266
-	Serial.println("ARDUINO_ARCH_ESP8266");
+	WIFI_DEBUG_PRINTLN("ARDUINO_ARCH_ESP8266");
 #endif
+
 	if (EnterpriseMode) {
 		// WPA2 Connection starts here
 		// Setting ESP into STATION mode only (no AP mode or dual mode)
-		Serial.println("Starting Enterprise...");
+		WIFI_DEBUG_PRINTLN("Enterprise mode configured...");
+
+		WiFi.disconnect(true);
 
 #ifdef ARDUINO_ARCH_ESP8266
 	// WPA2 Connection starts here
 	// Setting ESP into STATION mode only (no AP mode or dual mode)
-		Serial.println("Starting ESP8266 Enterprise...");
+		WIFI_DEBUG_PRINTLN("Starting ESP8266 Enterprise WiFi...");
 		wifi_set_opmode(STATION_MODE);
 
 		struct station_config wifi_config;
@@ -68,10 +74,26 @@ void WiFiStart(bool EnterpriseMode = false) {
 		wifi_station_set_enterprise_password((uint8*)SECRET_EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD));
 		wifi_station_connect();
 		// WPA2 Connection ends here
+
+#else
+
+	#ifdef ARDUINO_ARCH_ESP32
+			WIFI_DEBUG_PRINTLN("Starting ESP32 Enterprise WiFi...");
+			WiFi.mode(WIFI_STA); // be sure to set mode FIRST
+			esp_wifi_sta_wpa2_ent_set_identity((uint8_t*)SECRET_EAP_ID, strlen(SECRET_EAP_ID)); //provide identity
+			esp_wifi_sta_wpa2_ent_set_username((uint8_t*)SECRET_EAP_USERNAME, strlen(SECRET_EAP_USERNAME)); //provide username
+			esp_wifi_sta_wpa2_ent_set_password((uint8_t*)SECRET_EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD)); //provide password
+			esp_wpa2_config_t config = WPA2_CONFIG_INIT_DEFAULT();
+			esp_wifi_sta_wpa2_ent_enable(&config);
+			WiFi.begin(SECRET_WIFI_SSID);
+	#else
+			"only ESP32 and ESP82666 supported at this time!"
+	#endif
 #endif
+
 	}
 	else {
-		Serial.println("Starting regular Wi-Fi...");
+		WIFI_DEBUG_PRINTLN("Starting regular Wi-Fi...");
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
 		WiFi.mode(WIFI_STA);
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
@@ -88,7 +110,7 @@ void WiFiStart(bool EnterpriseMode = false) {
 //*******************************************************************************************************************************************
 int wifiConnect(int maxAttempts) {
 	int countAttempt = 0;
-	WiFiStart(IS_EAP);
+	WiFiStart(IS_EAP); // see GlobalDefine.h to set Enterprise Access Point on or off
 
 
 	myMacAddress = WiFi.macAddress(); // this returns 6 hex bytes, delimited by colons
