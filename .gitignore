@@ -243,3 +243,5 @@ ModelManifest.xml
 
 __vm/*.*
 /src/arduino folders read me.txt
+myPrivateSettings.*
+
