@@ -1,5 +1,7 @@
 // 
 // htmlHelper.cpp
+//
+// define HTTP_DEBUG in GlobalDefine to turn on Serial debug diagnostics
 // 
 
 #include "GlobalDefine.h"
@@ -43,7 +45,7 @@ String HTML_CleanURL(String url) {
 // generate a request block from the given url
 String HTML_RequestText(String url) {
     if (url == "") {
-        Serial.println("HTML_RequestText empty URL!");
+        HTTP_DEBUG_PRINTLN("HTML_RequestText empty URL!");
     }
     url = HTML_CleanURL(url);
     return String("GET ") + url + " HTTP/1.1\r\n" +
@@ -55,60 +57,60 @@ String HTML_RequestText(String url) {
 
 // send html request TheRequest to thisClient, return 302 move url in MovedToURL as needed
 void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& MovedToURL) {
-    Serial.println("HTML_SendRequest");
-    Serial.println("");
-    Serial.println(TheRequest);
-    Serial.println("");
+    HTTP_DEBUG_PRINTLN("HTML_SendRequest");
+    HTTP_DEBUG_PRINTLN("");
+    HTTP_DEBUG_PRINTLN(TheRequest);
+    HTTP_DEBUG_PRINTLN("");
     MovedToURL = "";
     (*thisClient).flush();
     yield();
     (*thisClient).print(TheRequest);
-    Serial.println("Request sent");
+    HTTP_DEBUG_PRINTLN("Request sent");
     while ((*thisClient).connected()) {
         String line = (*thisClient).readStringUntil('\n');
         if (line.startsWith("Location:")) {
             MovedToURL = line.substring(10); // note that this will include improper trailing \n\r chars, cleaned later
         }
-        Serial.println(line);
+        HTTP_DEBUG_PRINTLN(line);
         if (line == "\r") {
-            Serial.println("headers received");
+            HTTP_DEBUG_PRINTLN("headers received");
             break;
         }
     }
     String line;
 
-    Serial.println("reply:");
-    Serial.println("==========");
-    Serial.println(line);
+    HTTP_DEBUG_PRINTLN("reply:");
+    HTTP_DEBUG_PRINTLN("==========");
+    HTTP_DEBUG_PRINTLN(line);
 
     while ((*thisClient).available()) {
         line = (*thisClient).readStringUntil('\n');
-        Serial.println(line);
+        HTTP_DEBUG_PRINTLN(line);
         yield();
     }
 
-    Serial.println("==========");
+    HTTP_DEBUG_PRINTLN("==========");
     // (*thisClient).flush();
     yield();
-    Serial.println("");
-    Serial.println("End HTML_SendRequest");
-    Serial.println("");
+    HTTP_DEBUG_PRINTLN("");
+    HTTP_DEBUG_PRINTLN("End HTML_SendRequest");
+    HTTP_DEBUG_PRINTLN("");
 }
 
 // the non-public HTML_SendRequestFollowMove that keeps track of MoveDepth
 void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest, String& MovedToURL, int MoveDepth ) {
-    Serial.println("HTML_SendRequestFollowMove=");
+    HTTP_DEBUG_PRINTLN("HTML_SendRequestFollowMove=");
 
     HTML_SendRequest(thisClient, TheRequest, MovedToURL);
 
-    Serial.print("thisMovedRequestURL=");
-    Serial.println(MovedToURL);
+    HTTP_DEBUG_PRINT("thisMovedRequestURL=");
+    HTTP_DEBUG_PRINTLN(MovedToURL);
     if (MovedToURL == "") {
-        Serial.println("No move!");
+        HTTP_DEBUG_PRINTLN("No move!");
     }
     else {
-        Serial.print("Doing move! Depth = ");
-        Serial.println(MoveDepth);
+        HTTP_DEBUG_PRINT("Doing move! Depth = ");
+        HTTP_DEBUG_PRINTLN(MoveDepth);
 
         //url = "/RFID/default?UID=00000000"; // thisMovedRequestURL; // typically the default.aspx with the ".aspx" removed (weird) 
         String newurl = MovedToURL; // our new url is the one that returned as a new address
