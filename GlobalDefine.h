@@ -14,9 +14,17 @@
 //*************************************************************************************************************************************************************************************************
 // Begin user config
 //*******************************************************************************************************************************************
-// Note .RFID_Logger.vsarduino.h is ignored at compile time!
+// Note .RFID_Logger.vsarduino.h is ignored at compile time! (always? we'll still wrap with #ifndef just in case)
 //
-#define ARDUINO_ARCH_ESP8266
+//
+// Choose ARDUINO_ARCH_ESP8266 or ARDUINO_ARCH_ESP32 (but not both!) and ensure the Extensions - vMicro - Board is set to ESP32 WRover Module (if using the ThingPulse)
+//#ifndef ARDUINO_ARCH_ESP8266
+//#define ARDUINO_ARCH_ESP8266
+//#endif
+
+#ifndef ARDUINO_ARCH_ESP32
+#define ARDUINO_ARCH_ESP32
+#endif
 
 // My config is stored in myPrivateSettings.h file 
 // if you choose not to use such a file, set this to false:
@@ -24,24 +32,25 @@
 
 // Note the two possible file name string formats.
 #if USE_myPrivateSettings == true 
+
 #include "/workspace-git/myPrivateSettings.h"
+
 #else
+
 #pragma message(Reminder "Settings needed !")
-// create your own myPrivateSettings.h, or update the following lines:
+// create your own myPrivateSettings.h, or update the following lines in a SEPARATE file not included in your repo:
 static const char* SECRET_WIFI_SSID = "my-wifi-SSID"
 static const bool IS_EAP = true; // set to true for enterprise access point authentication, otherwise false for regular wifi
 
 static const char* SECRET_WIFI_PWD = "my-WiFi-PASSWORD";     // SSID password for regular Wi-Fi; user password for enterprise 
 static const char* SECRET_WIFI_USERNAME = "my-WiFi-USERNAME" // for enterprise logins
 
-static const char* SECRET_EAP_ID = "my-Enterprise-ID"                      // EAP_ID (typically the same as EAP_USERNAME)
-static const char* SECRET_EAP_USERNAME = "domain\\my-Enterpeise-UserName"; // Username for authentification (typically the same as EAP_ID)
+static const char* SECRET_EAP_ID = "my-Enterprise-ID"                      // EAP_ID (typically the same as EAP_USERNAME, e.g. domain\\my-Enterpeise-UserName) 
+static const char* SECRET_EAP_USERNAME = "domain\\my-Enterpeise-UserName"; // Username for authentification (typically the same as EAP_ID); consider trying also username@yourdomain.com
 static const char* SECRET_EAP_PASSWORD = "my-Enterpeise-Password";         // Password for authentication
 static const char* SECRET_APP_HOST = "contoso.com";                        // The primary host for this application
 static const int APP_HTTPS_PORT = 443; // the TLS/SSL port (typically 443)
 static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 50 A4 66 76 47 C6 A1 8C A0 07 AA ED BB 8E"; // SHA1 fingerprint copy this from APP_HOST certificate thumbprint to use for fingerprint setting
-
-
 #endif
 //**************************************************************************************************************
 //**************************************************************************************************************
@@ -57,12 +66,13 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 // #define JSON_DEBUG // when defined, display JSON debug info 
 #define WIFI_DEBUG // when defined, display WiFi debug info 
 #define SERIAL_SCREEN_DEBUG // when defined, display screen messages to serial port
-#define HTTP_DEBUG // when defined, display WiFi debug info 
+// #define HTTP_DEBUG // when defined, display WiFi debug info 
 #define DEBUG_SEPARATOR "***********************************"
 #define TIMER_DEBUG // when defined, display diagnostic timer info
 #define HEAP_DEBUG // when defined, display diagnostic heap info
 #define HARDWARE_DEBUG
 // #define SPIFFS_DEBUG
+#define RFID_DEBUG // when defined, show RFID debug info
 
 //**************************************************************************************************************
 // board-architecture-dependent WIFI_CLIENT_CLASS type selector 
