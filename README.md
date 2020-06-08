@@ -5,14 +5,14 @@ This project is in active development. Feedback, ideas, suggestions, and PRs wel
 ## Overview
 
 This RFID Logger project uses the [ThingPulse board](https://thingpulse.com/product/epulse-low-power-esp32-development-board/) 
-specfically because of the low-power feature. (likely adaptable to other ESP32 boards, as well) 
+specifically because of the low-power feature. (likely adaptable to other ESP32 boards, as well) 
 along with an RFID reader such as [this Mifare RC522 RFID Reader on Amazon](https://smile.amazon.com/gp/product/B07KGBJ9VG/).
 The intention of this project is to keep track of staff movements similar to an IN/OUT attendance board. Clearly much of the reliability
-and accuracy is based on the honor system to ensure cards are consitently used. 
+and accuracy is based on the honor system to ensure cards are consistently used. 
 
 ## Operation
 
-The ESP32 microcontroller boards waits for a card to be detected. Once a card is present, the UID is read and sent to a web server over HTTPS and saves in a SQL table.
+The ESP32 microcontroller board waits for a card to be detected. Once a card is present, the UID is read and sent to a web server over HTTPS and saves in a SQL table.
 
 In concept, this project could be used to control pretty much anything with the swipe of an RFID card. The receiving code could also be readily modified to save data to other databases, or even a text file.
 
@@ -21,7 +21,7 @@ In concept, this project could be used to control pretty much anything with the 
 Any Arduino-style device with Wi-Fi and SPI capabilities could probably be used;
 at this time both the ESP8266 and ESP32 are supported, using either regular or enterprise Wi-Fi, and communicating over SSL. 
 
-The code is Arduino-style C created in Visual Studio usign the [Visual Micro Extension](https://www.visualmicro.com/); see also the [Arduino IDE for Visual Studio (Visual Micro) on the marketplace](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio). 
+The code is Arduino-style C created in Visual Studio using the [Visual Micro Extension](https://www.visualmicro.com/); see also the [Arduino IDE for Visual Studio (Visual Micro) on the marketplace](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio). 
 It should also work just fine in the Arduino IDE (see the [RFID_Logger.ino](./RFID_Logger.ino) file)
 
 # Design Concepts
@@ -36,7 +36,7 @@ This solution should NOT be used for security applications, as noted [here](http
 
 ## Security
 -------
-* The **UID** of a card **can not be used** as an unique identification for security related projects. Some Chinese cards allow to change the UID which means you can easily clone a card. For projects like *access control*, *door opener* or *payment systems* you **must implement** an **additional security mechanism** like a password or normal key.
+* The **UID** of a card **can not be used** as an unique identification for security related projects. Some cards allow the UID to be changed - which means you can easily clone a card. For projects like *access control*, *door opener* or *payment systems* you **must implement** an **additional security mechanism** like a password or normal key.
 
 * This library only supports crypto1-encrypted communication. Crypto1 has been known as _broken_ for a few years, so it does NOT offer ANY security, it is virtually unencrypted communication. **Do not use it for any security related applications!**
 
