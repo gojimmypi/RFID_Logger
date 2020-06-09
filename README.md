@@ -29,8 +29,42 @@ mkdir -p c:\workspace
 cd workspace
 git clone https://github.com/gojimmypi/RFID_Logger.git
 ```
-Open either the `RFID_Logger.sln` in Visual Studio, or the `RFID_Logger.ino` in the Arduino IDE.
 
+### Assign your private settings
+
+Edit the `GlobalDefine.h` file, and create/edit your own `myPrivateSettings.h` file:
+```
+#define USE_myPrivateSettings true
+
+#if USE_myPrivateSettings == true 
+
+#include "/workspace-git/myPrivateSettings.h"
+
+#else
+
+... your settings here for USE_myPrivateSettings == false, or copy example settings to your own myPrivateSettings.h
+
+```
+It is _not_ recommended to set `USE_myPrivateSettings == false`, as it is usually best to keep your passwords and private settings someplace that will not be 
+inadvertantly saved to GitHub. But yes, you can set this and edit the settings directly in the `GlobalDefine.h` file.
+
+## Build and upload RFID_Logger Code
+
+Check the the ESP32 WROVER is selected, and the appropriate settings for either environment:
+
+### Build with Visual Studio and Visual Micro Arduino IDE Extension.
+
+Install the [Visual Micro IDE Extension](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio), if needed.
+
+Open `RFID_Logger.sln` in Visual Studio. 
+
+![VisualStudio_IDE_Settings](./images/Arduino_VisualStudio_IDE_Settings.png)
+
+### Build with Arduino IDE
+
+Open `RFID_Logger.ino` in the Arduino IDE.
+
+![Arduino_IDE_Settings](./images/Arduino_IDE_Settings.png)
 
 ## Supported Hardware
 
