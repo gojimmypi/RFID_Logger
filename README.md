@@ -16,6 +16,22 @@ The ESP32 microcontroller board waits for a card to be detected. Once a card is 
 
 In concept, this project could be used to control pretty much anything with the swipe of an RFID card. The receiving code could also be readily modified to save data to other databases, or even a text file.
 
+Although this project focuses on the ESP32, the ESP8266 also works. Both regular and enterprise authentication are also supported.
+
+If you are interested in guest authentication, check out my [desktop dashboard](https://github.com/gojimmypi/DesktopDashboard) that programmatically clicks the "_I accept terms and conditions_" and pressess enter to connect to internet.
+
+## Getting Started
+
+Clone this repo to your local drive (typically in the `c:\workspace` directory for Windows users:
+```
+c:
+mkdir -p c:\workspace
+cd workspace
+git clone https://github.com/gojimmypi/RFID_Logger.git
+```
+Open either the `RFID_Logger.sln` in Visual Studio, or the `RFID_Logger.ino` in the Arduino IDE.
+
+
 ## Supported Hardware
 
 Any Arduino-style device with Wi-Fi and SPI capabilities could probably be used;
