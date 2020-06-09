@@ -19,7 +19,6 @@
     <None Include="src\arduino folders read me.txt">
       <Filter>Misc Files</Filter>
     </None>
-    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.RFID_Logger.vsarduino.h">
@@ -34,6 +33,9 @@
     <ClInclude Include="sslHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="htmlHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GlobalDefine.cpp">
@@ -43,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sslHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="htmlHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
