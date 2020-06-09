@@ -114,7 +114,7 @@ int wifiConnect(int maxAttempts) {
 
 
 	myMacAddress = WiFi.macAddress(); // this returns 6 hex bytes, delimited by colons
-
+	
 	WIFI_DEBUG_PRINTLN("Starting WiFi Connection Loop...");
 	while (WiFi.status() != WL_CONNECTED) {  // try to connect wifi for 6 sec then reset
 
@@ -140,7 +140,7 @@ int wifiConnect(int maxAttempts) {
 			}
 		}
 	}
-	WIFI_DEBUG_PRINTLN("Connected!");
+	WIFI_DEBUG_PRINTLN("WiFi Connected!");
 	delay(5000); // TODO why wait?
 	myMacAddress.replace(":", "");
 	myMacAddress.replace("-", ""); // probably not used, but just in case they MAC address starts returning other well known delimiters such as dash
@@ -148,6 +148,6 @@ int wifiConnect(int maxAttempts) {
 
 	Serial.println("MAC Address=" + myMacAddress);
 	HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
-	WIFI_DEBUG_PRINT("wifiConnect: Done! /n/n");
+	WIFI_DEBUG_PRINT("wifiConnect: Done!");
 	return 0;
 }
