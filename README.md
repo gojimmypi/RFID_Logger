@@ -58,7 +58,7 @@ Install the [Visual Micro IDE Extension](https://marketplace.visualstudio.com/it
 
 Open `RFID_Logger.sln` in Visual Studio. 
 
-![VisualStudio_IDE_Settings](./images/Arduino_VisualStudio_IDE_Settings.png)
+![VisualStudio_IDE_Settings](./images/VisualStudio_IDE_Settings.png)
 
 ### Build with Arduino IDE
 
