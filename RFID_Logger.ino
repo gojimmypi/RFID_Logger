@@ -59,47 +59,18 @@ byte nuidPICC[4];
 int SaveUID(String thisUID) {
 
 	if (thisUID) {
-		if (!client.connect(SECRET_APP_HOST, APP_HTTPS_PORT)) {
-			Serial.println("client.connect failed; check firewall on receiver");
+		if (!client.connected()) {
+			Serial.println("SaveUID when wifi client.connected is false; check firewall on receiver");
+			Serial.print("IP address=");
+			Serial.println(WiFi.localIP());
 			return 2;
 		}
-
 
 		Serial.println("Saving UID");
 		String url = "/RFID/default.aspx?UID=" + thisUID; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
 		String thisRequest = HTML_RequestText(url);
 		String thisMovedRequestURL = "";
 		HTML_SendRequestFollowMove(&client, thisRequest, thisMovedRequestURL);
-
-		//String MovedToURL;
-
-		//(client).print(thisRequest);
-		//Serial.println("");
-		//Serial.println("the request:");
-		//Serial.println(thisRequest);
-		//Serial.println("");
-
-
-		//Serial.println("request sent");
-		//while ((client).connected()) {
-		//	String line = (client).readStringUntil('\n');
-		//	if (line.startsWith("Location:")) {
-		//		MovedToURL = line.substring(9);
-		//	}
-		//	Serial.println(line);
-		//	if (line == "\r") {
-		//		Serial.println("headers received");
-		//		break;
-		//	}
-		//}
-		//String line = (client).readStringUntil('\n');
-		//Serial.println(line);
-
-		//Serial.println("reply was:");
-		//Serial.println("==========");
-		//Serial.println(line);
-		//Serial.println("==========");
-
 
 		return 0;
 	}
@@ -153,15 +124,26 @@ void setup() {
 	while (!Serial) {
 		delay(10);
 	}
-	Serial.println("Go!");
-
-	//while (true)
-	//{
-	//	delay(2500);
-	//	Serial.println("disabled check wifi!");
-	//}
+	Serial.println("Hello RFID_Logger!");
 
 	wifiConnect(50);
+
+	while (!client.connect(SECRET_APP_HOST, APP_HTTPS_PORT)) {
+		Serial.println("client.connect failed; check firewall on receiver");
+		Serial.print("IP address=");
+		Serial.println(WiFi.localIP());
+		Serial.print("MAC address=");
+		Serial.println(WiFi.macAddress());
+		int retry = 0;
+		for (size_t i = 60; i > 0; i--)
+		{
+			Serial.print(".");
+			Serial.print(i);
+			delay(1000);
+		}
+		Serial.println();
+		Serial.println("Trying again!");
+	}
 
 	SaveUID("00000000"); // save a marker at startup time
 
