@@ -56,33 +56,49 @@ String HTML_RequestText(String url) {
 }
 
 // send html request TheRequest to thisClient, return 302 move url in MovedToURL as needed
+// we do NOT follow the 302 here! See HTML_SendRequestFollowMove()
 void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& MovedToURL) {
-    HTTP_DEBUG_PRINTLN("HTML_SendRequest");
-    HTTP_DEBUG_PRINTLN("");
+    String line = "";
+    MovedToURL = ""; // if there's a 302 move response location, we'll put it here. If not, it will be sthis empty strong
+
+    if (!(*thisClient).connected()) {
+        HTTP_DEBUG_PRINTLN("Warning: HTML_SendRequest called with thisClient NOT CONNECTED!");
+    }
+
+    HTTP_DEBUG_PRINTLN("Starting HTML_SendRequest. TheRequest:");
+    HTTP_DEBUG_PRINTLN("==========");
     HTTP_DEBUG_PRINTLN(TheRequest);
-    HTTP_DEBUG_PRINTLN("");
-    MovedToURL = "";
+    HTTP_DEBUG_PRINTLN("==========");
+
     (*thisClient).flush();
     yield();
     (*thisClient).print(TheRequest);
-    HTTP_DEBUG_PRINTLN("Request sent");
+    HTTP_DEBUG_PRINTLN("Request sent.");
+    HTTP_DEBUG_PRINTLN("");
+    HTTP_DEBUG_PRINTLN("Response:");
+    HTTP_DEBUG_PRINTLN("");
+
+    // we'll only read while WiFi is connected. 
+    // If we lose connection while reading data, we'll give up
     while ((*thisClient).connected()) {
         String line = (*thisClient).readStringUntil('\n');
         if (line.startsWith("Location:")) {
             MovedToURL = line.substring(10); // note that this will include improper trailing \n\r chars, cleaned later
+            // TODO - is there ever non-link text included? (maybe)
         }
         HTTP_DEBUG_PRINTLN(line);
         if (line == "\r") {
-            HTTP_DEBUG_PRINTLN("headers received");
+            HTTP_DEBUG_PRINTLN("Headers receive complete!");
             break;
         }
+        yield();
     }
-    String line;
 
     HTTP_DEBUG_PRINTLN("reply:");
     HTTP_DEBUG_PRINTLN("==========");
-    HTTP_DEBUG_PRINTLN(line);
 
+    // we'll continue to read everything... but if using the supplied web app, 
+    // the only thing returned should be a number: the primary key of the record added in the SQL table
     while ((*thisClient).available()) {
         line = (*thisClient).readStringUntil('\n');
         HTTP_DEBUG_PRINTLN(line);
@@ -90,8 +106,6 @@ void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& M
     }
 
     HTTP_DEBUG_PRINTLN("==========");
-    // (*thisClient).flush();
-    yield();
     HTTP_DEBUG_PRINTLN("");
     HTTP_DEBUG_PRINTLN("End HTML_SendRequest");
     HTTP_DEBUG_PRINTLN("");
