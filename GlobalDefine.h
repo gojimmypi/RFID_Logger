@@ -66,7 +66,7 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 // #define JSON_DEBUG // when defined, display JSON debug info 
 #define WIFI_DEBUG // when defined, display WiFi debug info 
 #define SERIAL_SCREEN_DEBUG // when defined, display screen messages to serial port
-// #define HTTP_DEBUG // when defined, display WiFi debug info 
+#define HTTP_DEBUG // when defined, display WiFi debug info 
 #define DEBUG_SEPARATOR "***********************************"
 #define TIMER_DEBUG // when defined, display diagnostic timer info
 #define HEAP_DEBUG // when defined, display diagnostic heap info
