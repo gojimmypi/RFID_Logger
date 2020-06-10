@@ -10,6 +10,8 @@ along with an RFID reader such as [this Mifare RC522 RFID Reader on Amazon](http
 The intention of this project is to keep track of staff movements similar to an IN/OUT attendance board. Clearly much of the reliability
 and accuracy is based on the honor system to ensure cards are consistently used. 
 
+![lid cover view](./images/lid_cover_view.png)
+
 ## Operation
 
 The ESP32 microcontroller board waits for a card to be detected. Once a card is present, the UID is read and sent to a web server over HTTPS and saves in a SQL table.
@@ -94,6 +96,8 @@ This solution should NOT be used for security applications, as noted [here](http
 
 # Libraries needed:
 
+This section applied to both Visual Micro and the Arduino IDE as Visual Micro uses the same settings and library paths as the Arduino IDE.
+
 In the Arduino IDE, under `File` - `Prewferences`, enter a comma-delimited `Additional Boards Manager URL` such as these two for the ESP8266 and ESP32:
 
 ```
@@ -102,11 +106,12 @@ https://arduino.esp8266.com/stable/package_esp8266com_index.json,https://dl.espr
 
 # Low Power Mode
 
-Unfortunately, the D1 LED on the blue version of the board is a straight 1K power to ground as shown on the [schematic](./doc/RFID_Schematic.png). 
-This LED drops about 1.8v so we have (3.3 - 1.8) / 1000 = 1.5mA wasted on a power indicator we can't even control. 
+Unfortunately, the D1 LED on the blue version of the board is a straight 10K power to ground as shown on the [schematic](./doc/RFID_Schematic.png). 
+This LED drops about 1.8v so we have (3.3 - 1.8) / 10,000 = 0.15mA (150 microamps) wasted on a power indicator we can't even control. 
+Ok, this is not a lot. On battery, every microamp counts.
 The entire RFID board consumes just under 10mA during normal operation (9.67mA measured).
 
-See section `8.6 Power reduction modes` (page 33) of the [MFRC522 data sheet](./docs/MFRC522.pdf) and 
+See section `8.6 Power reduction modes` (page 33) of the [MFRC522 data sheet](./docs/MFRC522.pdf) and TODO... 
 
 
 There's a [SunFounder Mifare RC522 Card Reader](https://www.amazon.com/dp/B00E0ODLWQ/) that is more expensive, but appears to
