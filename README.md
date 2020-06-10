@@ -20,11 +20,12 @@ In concept, this project could be used to control pretty much anything with the 
 
 Although this project focuses on the ESP32, the ESP8266 also works. Both regular and enterprise authentication are also supported.
 
-If you are interested in guest authentication, check out my [desktop dashboard](https://github.com/gojimmypi/DesktopDashboard) that programmatically clicks the "_I accept terms and conditions_" and pressess enter to connect to internet.
+If you are interested in _guest authentication_, check out my [desktop dashboard](https://github.com/gojimmypi/DesktopDashboard) that programmatically clicks the "_I accept terms and conditions_" and (simulates) pressing `enter` to connect to internet.
+Guest authentication is not (yet) implemented here.
 
 ## Getting Started
 
-Clone this repo to your local drive (typically in the `c:\workspace` directory for Windows users:
+Clone this repo to your local drive (typically in the `c:\workspace` directory for Windows users):
 ```
 c:
 mkdir -p c:\workspace
@@ -52,19 +53,22 @@ inadvertantly saved to GitHub. But yes, you can set this and edit the settings d
 
 ## Build and upload RFID_Logger Code
 
-Check the the ESP32 WROVER is selected, and the appropriate settings for either environment:
+The code is Arduino-style C created in Visual Studio using the [Visual Micro Extension](https://www.visualmicro.com/); see also the [Arduino IDE for Visual Studio (Visual Micro) on the marketplace](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio). 
+It should also work just fine in the Arduino IDE (see the [RFID_Logger.ino](./RFID_Logger.ino) file)
+
+Check the the `ESP32 WROVER` is selected, and the appropriate settings for either environment:
 
 ### Build with Visual Studio and Visual Micro Arduino IDE Extension.
 
 Install the [Visual Micro IDE Extension](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio), if needed.
 
-Open `RFID_Logger.sln` in Visual Studio. 
+Open `RFID_Logger.sln` in Visual Studio. Check settings and select your COM port:
 
 ![VisualStudio_IDE_Settings](./images/VisualStudio_IDE_Settings.png)
 
 ### Build with Arduino IDE
 
-Open `RFID_Logger.ino` in the Arduino IDE.
+Open `RFID_Logger.ino` in the Arduino IDE. Check settings and select your COM port:
 
 ![Arduino_IDE_Settings](./images/Arduino_IDE_Settings.png)
 
@@ -72,9 +76,6 @@ Open `RFID_Logger.ino` in the Arduino IDE.
 
 Any Arduino-style device with Wi-Fi and SPI capabilities could probably be used;
 at this time both the ESP8266 and ESP32 are supported, using either regular or enterprise Wi-Fi, and communicating over SSL. 
-
-The code is Arduino-style C created in Visual Studio using the [Visual Micro Extension](https://www.visualmicro.com/); see also the [Arduino IDE for Visual Studio (Visual Micro) on the marketplace](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio). 
-It should also work just fine in the Arduino IDE (see the [RFID_Logger.ino](./RFID_Logger.ino) file)
 
 # Design Concepts
 
@@ -112,7 +113,6 @@ Ok, this is not a lot. On battery, every microamp counts.
 The entire RFID board consumes just under 10mA during normal operation (9.67mA measured).
 
 See section `8.6 Power reduction modes` (page 33) of the [MFRC522 data sheet](./docs/MFRC522.pdf) and TODO... 
-
 
 There's a [SunFounder Mifare RC522 Card Reader](https://www.amazon.com/dp/B00E0ODLWQ/) that is more expensive, but appears to
 not have the LED. The [wiki](http://wiki.sunfounder.cc/index.php?title=Mifare_RC522_Module_RFID_Reader#Electrical_Parameters) claims the idle current is still 10-13mA.
