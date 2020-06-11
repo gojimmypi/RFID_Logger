@@ -1,6 +1,9 @@
 create proc dbo.proc_add_RFID_UID_log
-  @CARDSN varchar(20) = Null,
-  @device_id varchar(20) = Null,
+  @CARDSN    varchar(20) = Null,
+  @MSG       varchar(255) = '',
+  @MAC       varchar(20) = '',
+  @IP        varchar(20) = '',
+  @device_id varchar(20) = '',
   @echo_output  as varchar(12) = Null,
   @debug_status as varchar(12) = Null
 AS
@@ -21,7 +24,7 @@ BEGIN
   **
   ** Date      Version  By             Description
   ** -------------------------------------------------------------------------------------------------------------------------------
-  ** 01JUN20    1.0     Jim Scarletta  initial code
+  ** 01JUN20    1.0     gojimmypi      initial code
   */
   SET NOCOUNT ON
   Declare @strRes varchar(64)
@@ -29,10 +32,16 @@ BEGIN
 
   INSERT INTO Tracker.dbo.RFID_UID_log
       (CARDSN,
+       MSG,
+       MAC,
+       IP,
        device_id)
   VALUES
-      (@CARDSN /*CARDSN_Value*/,
-       @device_id/*device_id_Value*/)
+      (@CARDSN,
+       @MSG,
+       @MAC,
+       @IP,
+       @device_id )
 
   SET @ID = SCOPE_IDENTITY();
   
@@ -45,8 +54,7 @@ BEGIN
     SELECT @ID as ID
   End
 
-  RETURN
-END
+  RETURNEND
 go
 IF OBJECT_ID(N'dbo.proc_add_RFID_UID_log') IS NOT NULL
     PRINT N'<<< CREATED PROCEDURE dbo.proc_add_RFID_UID_log >>>'

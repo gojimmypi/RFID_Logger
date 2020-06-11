@@ -10,6 +10,8 @@ along with an RFID reader such as [this Mifare RC522 RFID Reader on Amazon](http
 The intention of this project is to keep track of staff movements similar to an IN/OUT attendance board. Clearly much of the reliability
 and accuracy is based on the honor system to ensure cards are consistently used. 
 
+![lid cover view](./images/lid_cover_view.png)
+
 ## Operation
 
 The ESP32 microcontroller board waits for a card to be detected. Once a card is present, the UID is read and sent to a web server over HTTPS and saves in a SQL table.
@@ -18,11 +20,12 @@ In concept, this project could be used to control pretty much anything with the 
 
 Although this project focuses on the ESP32, the ESP8266 also works. Both regular and enterprise authentication are also supported.
 
-If you are interested in guest authentication, check out my [desktop dashboard](https://github.com/gojimmypi/DesktopDashboard) that programmatically clicks the "_I accept terms and conditions_" and pressess enter to connect to internet.
+If you are interested in _guest authentication_, check out my [desktop dashboard](https://github.com/gojimmypi/DesktopDashboard) that programmatically clicks the "_I accept terms and conditions_" and (simulates) pressing `enter` to connect to internet.
+Guest authentication is not (yet) implemented here.
 
 ## Getting Started
 
-Clone this repo to your local drive (typically in the `c:\workspace` directory for Windows users:
+Clone this repo to your local drive (typically in the `c:\workspace` directory for Windows users):
 ```
 c:
 mkdir -p c:\workspace
@@ -50,19 +53,22 @@ inadvertantly saved to GitHub. But yes, you can set this and edit the settings d
 
 ## Build and upload RFID_Logger Code
 
-Check the the ESP32 WROVER is selected, and the appropriate settings for either environment:
+The code is Arduino-style C created in Visual Studio using the [Visual Micro Extension](https://www.visualmicro.com/); see also the [Arduino IDE for Visual Studio (Visual Micro) on the marketplace](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio). 
+It should also work just fine in the Arduino IDE (see the [RFID_Logger.ino](./RFID_Logger.ino) file)
+
+Check the the `ESP32 WROVER` is selected, and the appropriate settings for either environment:
 
 ### Build with Visual Studio and Visual Micro Arduino IDE Extension.
 
 Install the [Visual Micro IDE Extension](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio), if needed.
 
-Open `RFID_Logger.sln` in Visual Studio. 
+Open `RFID_Logger.sln` in Visual Studio. Check settings and select your COM port:
 
 ![VisualStudio_IDE_Settings](./images/VisualStudio_IDE_Settings.png)
 
 ### Build with Arduino IDE
 
-Open `RFID_Logger.ino` in the Arduino IDE.
+Open `RFID_Logger.ino` in the Arduino IDE. Check settings and select your COM port:
 
 ![Arduino_IDE_Settings](./images/Arduino_IDE_Settings.png)
 
@@ -70,9 +76,6 @@ Open `RFID_Logger.ino` in the Arduino IDE.
 
 Any Arduino-style device with Wi-Fi and SPI capabilities could probably be used;
 at this time both the ESP8266 and ESP32 are supported, using either regular or enterprise Wi-Fi, and communicating over SSL. 
-
-The code is Arduino-style C created in Visual Studio using the [Visual Micro Extension](https://www.visualmicro.com/); see also the [Arduino IDE for Visual Studio (Visual Micro) on the marketplace](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio). 
-It should also work just fine in the Arduino IDE (see the [RFID_Logger.ino](./RFID_Logger.ino) file)
 
 # Design Concepts
 
@@ -98,6 +101,8 @@ This solution should NOT be used for security applications, as noted [here](http
 
 # Libraries needed:
 
+This section applied to both Visual Micro and the Arduino IDE as Visual Micro uses the same settings and library paths as the Arduino IDE.
+
 In the Arduino IDE, under `File` - `Prewferences`, enter a comma-delimited `Additional Boards Manager URL` such as these two for the ESP8266 and ESP32:
 
 ```
@@ -106,12 +111,12 @@ https://arduino.esp8266.com/stable/package_esp8266com_index.json,https://dl.espr
 
 # Low Power Mode
 
-Unfortunately, the D1 LED on the blue version of the board is a straight 1K power to ground as shown on the [schematic](./doc/RFID_Schematic.png). 
-This LED drops about 1.8v so we have (3.3 - 1.8) / 1000 = 1.5mA wasted on a power indicator we can't even control. 
+Unfortunately, the D1 LED on the blue version of the board is a straight 10K power to ground as shown on the [schematic](./doc/RFID_Schematic.png). 
+This LED drops about 1.8v so we have (3.3 - 1.8) / 10,000 = 0.15mA (150 microamps) wasted on a power indicator we can't even control. 
+Ok, this is not a lot. On battery, every microamp counts.
 The entire RFID board consumes just under 10mA during normal operation (9.67mA measured).
 
-See section `8.6 Power reduction modes` (page 33) of the [MFRC522 data sheet](./docs/MFRC522.pdf) and 
-
+See section `8.6 Power reduction modes` (page 33) of the [MFRC522 data sheet](./docs/MFRC522.pdf) and TODO... 
 
 There's a [SunFounder Mifare RC522 Card Reader](https://www.amazon.com/dp/B00E0ODLWQ/) that is more expensive, but appears to
 not have the LED. The [wiki](http://wiki.sunfounder.cc/index.php?title=Mifare_RC522_Module_RFID_Reader#Electrical_Parameters) claims the idle current is still 10-13mA.
