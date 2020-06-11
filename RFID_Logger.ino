@@ -34,7 +34,7 @@ SOFTWARE.
 #include "sslHelper.h"
 #include "htmlHelper.h"
 
-// Define our SPI connection and parameters for the RFIS reader (VSPI)
+// Define our SPI connection and parameters for the RFID reader (VSPI)
 #define SS_PIN    21
 #define RST_PIN   22
 #define SIZE_BUFFER     18
@@ -42,32 +42,61 @@ SOFTWARE.
 
 
 // Initialize the Wi-Fi client library
-// WiFiClient client;
+// WiFiClient client; // this is the non-TLS/SSL one!
+
 // Use WiFiClientSecure class to create TLS connection
 WiFiClientSecure client;
-
 
 // Initialize our FRID reader with a single instance:
 MFRC522 rfid(SS_PIN, RST_PIN);
 
-// Initialize our RFID key will be found (new CARDSN/UID values found here)
+// Initialize our RFID key (new CARDSN/UID values found here)
 MFRC522::MIFARE_Key key;
 
 // Init array that will store new NUID 
 byte nuidPICC[4];
 
-int SaveUID(String thisUID) {
+void WebServerConnect() {
+	while (!client.connect(SECRET_APP_HOST, APP_HTTPS_PORT)) {
+		Serial.println("client.connect failed; check firewall on receiver");
+		Serial.print("IP address=");
+		Serial.println(WiFi.localIP());
+		Serial.print("MAC address=");
+		Serial.println(WiFi.macAddress());
+		int retry = 0;
+		for (size_t i = 60; i > 0; i--)
+		{
+			Serial.print(".");
+			Serial.print(i);
+			delay(1000);
+		}
+		Serial.println();
+		Serial.println("Trying again!");
+	}
+
+}
+
+bool WiFiConnected() {
+	return (WiFi.status() == WL_CONNECTED);
+}
+
+
+int SaveUID(String thisUID, String thisMessage) {
 
 	if (thisUID) {
+		if (!WiFiConnected()) {
+			wifiConnect(50);
+			WebServerConnect();
+		}
+
 		if (!client.connected()) {
 			Serial.println("SaveUID when wifi client.connected is false; check firewall on receiver");
 			Serial.print("IP address=");
 			Serial.println(WiFi.localIP());
 			return 2;
 		}
-
 		Serial.println("Saving UID");
-		String url = "/RFID/default.aspx?UID=" + thisUID; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
+		String url = "/RFID/default.aspx?UID=" + thisUID + "&MAC=" + wifiMacAddress() + "&MSG=" + thisMessage; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
 		String thisRequest = HTML_RequestText(url);
 		String thisMovedRequestURL = "";
 		HTML_SendRequestFollowMove(&client, thisRequest, thisMovedRequestURL);
@@ -126,26 +155,10 @@ void setup() {
 	}
 	Serial.println("Hello RFID_Logger!");
 
-	wifiConnect(50);
+	//wifiConnect(50);
 
-	while (!client.connect(SECRET_APP_HOST, APP_HTTPS_PORT)) {
-		Serial.println("client.connect failed; check firewall on receiver");
-		Serial.print("IP address=");
-		Serial.println(WiFi.localIP());
-		Serial.print("MAC address=");
-		Serial.println(WiFi.macAddress());
-		int retry = 0;
-		for (size_t i = 60; i > 0; i--)
-		{
-			Serial.print(".");
-			Serial.print(i);
-			delay(1000);
-		}
-		Serial.println();
-		Serial.println("Trying again!");
-	}
 
-	SaveUID("00000000"); // save a marker at startup time
+	SaveUID("00000000", "Startup"); // save a marker at startup time
 
 	// testSSL();
 
@@ -193,7 +206,8 @@ void loop() {
 
 		String detectedUID = UID_Hex(rfid.uid.uidByte, rfid.uid.size);
 		Serial.println(detectedUID);
-		SaveUID(detectedUID);
+
+		SaveUID(detectedUID, "Detected");
 
 		// Halt PICC
 		rfid.PICC_HaltA();
