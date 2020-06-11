@@ -33,6 +33,13 @@ extern "C" {
 String myMacAddress;
 
 String wifiMacAddress() {
+	if (!myMacAddress || (myMacAddress == "")) {
+		myMacAddress = WiFi.macAddress(); // this returns 6 hex bytes, delimited by colons
+		myMacAddress.replace(":", "");
+		myMacAddress.replace("-", ""); // probably not used, but just in case they MAC address starts returning other well known delimiters such as dash
+		myMacAddress.replace(" ", ""); // or perhaps even a space
+	}
+
     return myMacAddress;
 }
 
@@ -113,7 +120,6 @@ int wifiConnect(int maxAttempts) {
 	WiFiStart(IS_EAP); // see GlobalDefine.h to set Enterprise Access Point on or off
 
 
-	myMacAddress = WiFi.macAddress(); // this returns 6 hex bytes, delimited by colons
 	
 	WIFI_DEBUG_PRINTLN("Starting WiFi Connection Loop...");
 	while (WiFi.status() != WL_CONNECTED) {  // try to connect wifi for 6 sec then reset
@@ -142,11 +148,8 @@ int wifiConnect(int maxAttempts) {
 	}
 	WIFI_DEBUG_PRINTLN("WiFi Connected!");
 	delay(5000); // TODO why wait?
-	myMacAddress.replace(":", "");
-	myMacAddress.replace("-", ""); // probably not used, but just in case they MAC address starts returning other well known delimiters such as dash
-	myMacAddress.replace(" ", ""); // or perhaps even a space
 
-	Serial.println("MAC Address=" + myMacAddress);
+	Serial.println("MAC Address=" + wifiMacAddress());
 	HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
 	WIFI_DEBUG_PRINT("wifiConnect: Done!");
 	return 0;
