@@ -82,6 +82,10 @@ by a [stored procedure](proc_add_RFID_UID_log.sql) called from the [web page](./
 
 With Enterprise Security at the WiFi AP, integrated security could be configured at the web server.
 
+Why not a Raspberry Pi? The only thing we are doing is sending an RFID value to a database. Yes, the implementation would probably be easier on
+a Raspberry Pi. But we don't need the complexity and vulerabilities of an entire operating system. An embedded controller is also vastly more
+appropriate for low power applications.
+
 This solution should NOT be used for security applications, as noted [here](https://github.com/miguelbalboa/rfid#security) and repeated here:
 
 ## Security
@@ -132,6 +136,7 @@ Although they may look similar, this solution does not work with 125kHz RFID Key
 
 * Make sure firewall port 443 is open on target system for the Wi-Fi IP address of your device. (beware DHCP addresses can _change_ over time)
 * Check to see if any other program is using the COM port (Other instances of Visual Studio, Arduino IDE Serial Monitor, putty sessions, VM connections, etc.)
+* See [miguelbalboa/rfid](https://github.com/miguelbalboa/rfid#troubleshooting)
 
 # Links to this project:
 
@@ -149,6 +154,7 @@ Essentials:
 * [ePulse – Low Power ESP32 development board](https://thingpulse.com/product/epulse-low-power-esp32-development-board/)
 * [Easy EDA RFID MFRC522](https://easyeda.com/gerrychen/RFID_MFRC522-lHBSasmEW)
 * [Visual Micro Arduino IDE](https://www.visualmicro.com/) for [Visual Studio](https://visualstudio.microsoft.com/)
+* [ESP8266 Install / Boards Manager](https://arduino-esp8266.readthedocs.io/en/latest/installing.html#using-git-version)
 
 Code samples:
 * [espressif/arduino-esp32 WiFiClientSecureEnterprise.ino example](https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFiClientSecure/examples/WiFiClientSecureEnterprise/WiFiClientSecureEnterprise.ino)
@@ -157,6 +163,19 @@ Code samples:
 * [JeroenBeemster ESP32 WPA2 Enterprise example simplified for Arduino](https://github.com/JeroenBeemster/ESP32-WPA2-enterprise)
 * [esp8266wifi client secure examples](https://arduino-esp8266.readthedocs.io/en/latest/esp8266wifi/client-secure-examples.html)
 * [espressif/arduino-esp32: Is it possible to connect to WPA2 Enterprise with Arduino IDE #160](https://github.com/espressif/arduino-esp32/issues/160)
+* [esp8266/Arduino/libraries/ESP8266WiFi/src/](https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi/src)
+* [esp8266/Arduino/tools/sdk/include/wpa2_enterprise.h](https://github.com/esp8266/Arduino/blob/master/tools/sdk/include/wpa2_enterprise.h)
+
+WiFi:
+* [arduino-esp8266.readthedocs BearSSL WiFi Classes](https://arduino-esp8266.readthedocs.io/en/latest/esp8266wifi/bearssl-client-secure-class.html)
+* [esp8266.com WPA2 Enteprise Authentication](https://www.esp8266.com/viewtopic.php?p=79527#)
+
+HTTP:
+* [stackoverflow Format of an HTTP get request](https://stackoverflow.com/questions/21195956/format-of-an-http-get-request)
+* [techtutorialsx ESP32: HTTP POST Requests](https://techtutorialsx.com/2017/05/20/esp32-http-post-requests/)
+
+RFID:
+* [smartcardfocus.com - How to read a MiFare card using PC/SC](https://buzz.smartcardfocus.com/read-mifare-uid-using-pcsc/)
 
 Power Related:
 * [ePulse – Low Power ESP32 development board](https://thingpulse.com/product/epulse-low-power-esp32-development-board/)
@@ -164,6 +183,12 @@ Power Related:
 * [Nordic ID: How Different Power Saving Options Affect Your RFID Reader’s Battery Life and Power Consumption](https://www.nordicid.com/resources/expert-article/how-different-power-saving-options-affect-your-rfid-readers-battery-life-and-power-consumption/)
 * [Random Nerd Tutorials: ESP32 External Wake Up from Deep Sleep](https://randomnerdtutorials.com/esp32-external-wake-up-deep-sleep/)
 * [miguelbalboa/rfid/issues/269 - Power Down Modes](https://github.com/miguelbalboa/rfid/issues/269)
+
+GitHub Issues:
+* [esp8266/Arduino WPA2 enterprise with credentials auth ok with radius but still get STATION_WRONG_PASSWORD after 30s #6803](https://github.com/esp8266/Arduino/issues/6803)
+* [espressif/arduino-esp32 WifiClientSecure connect(IPAddress ip, hostport) not working #1487](https://github.com/espressif/arduino-esp32/issues/1487)
+* [espressif/arduino-esp32 Cannot enable WPA2 Enterprise using arduino libraries #1744](https://github.com/espressif/arduino-esp32/issues/1744)
+* [JeroenBeemster/ESP32-WPA2-enterprise sp_wifi_sta_wpa2_ent_enable() needs a parameters #3](https://github.com/JeroenBeemster/ESP32-WPA2-enterprise/issues/3)
 
 Other stuff:
 * [Use an ESP8266 Beacon Spammer to Track Smartphone Users](https://null-byte.wonderhowto.com/how-to/use-esp8266-beacon-spammer-track-smartphone-users-0187599/)
