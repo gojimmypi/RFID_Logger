@@ -1,18 +1,10 @@
 ﻿
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.ApplicationBlocks.Data;
 using CustomControls;
-using System.Web.Optimization;
-using System.Xml.Serialization;
-using System.IO;
 
 namespace RFID
 {
@@ -22,6 +14,14 @@ namespace RFID
         public string ThisUID()
         {
             return common.SafeParam(Request.QueryString["UID"]);
+        }
+        public string ThisMAC()
+        {
+            return common.SafeParam(Request.QueryString["MAC"]);
+        }
+        public string ThisMSG()
+        {
+            return common.SafeParam(Request.QueryString["MSG"]);
         }
         public int MyProperty { get; set; }
 
@@ -42,7 +42,8 @@ namespace RFID
             SqlParameter[] sqlParams = new SqlParameter[]
             {
                     new SqlParameter("@CARDSN",ThisUID()),
-                    new SqlParameter("@device_id","test"),
+                    new SqlParameter("@MAC",ThisMAC()),
+                    new SqlParameter("@MSG",ThisMSG()),
                     new SqlParameter("@echo_output","true"),
                     new SqlParameter("@debug_status","0"),
             };
