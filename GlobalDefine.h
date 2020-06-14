@@ -10,27 +10,45 @@
 #include "WProgram.h"
 #endif
 
+static const char* HEX_CHARS = "0123456789ABCDEF";
 
+
+//*******************************************************************************************************************************************
 //*************************************************************************************************************************************************************************************************
 // Begin user config
+//*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 // Note .RFID_Logger.vsarduino.h is ignored at compile time! (always? we'll still wrap with #ifndef just in case)
 //
 //
-// Choose ARDUINO_ARCH_ESP8266 or ARDUINO_ARCH_ESP32 (but not both!) and ensure the Extensions - vMicro - Board is set to ESP32 WRover Module (if using the ThingPulse)
+
+//*************************************************************************************************************************************************************************************************
+// Board Type
+//*******************************************************************************************************************************************
+// Choose ARDUINO_ARCH_ESP8266 or ARDUINO_ARCH_ESP32 or ARDUINO_SAMD_MKRWIFI1010 
+// then ensure the Extensions - vMicro - Board is set to the matching hardware; ESP32 WRover Module (if using the ThingPulse)
+
 //#ifndef ARDUINO_ARCH_ESP8266
 //#define ARDUINO_ARCH_ESP8266
 //#endif
 
-#ifndef ARDUINO_ARCH_ESP32
-#define ARDUINO_ARCH_ESP32
+//#ifndef ARDUINO_ARCH_ESP32
+//#define ARDUINO_ARCH_ESP32
+//#endif
+
+#ifndef ARDUINO_SAMD_MKRWIFI1010
+#define ARDUINO_SAMD_MKRWIFI1010
 #endif
 
+
+//*************************************************************************************************************************************************************************************************
+// private secret settings
+//*******************************************************************************************************************************************
 // My config is stored in myPrivateSettings.h file 
 // if you choose not to use such a file, set this to false:
 #define USE_myPrivateSettings true
 
-// Note the two possible file name string formats.
+// Note the two possible file name string formats. 
 #if USE_myPrivateSettings == true 
 
 #include "/workspace-git/myPrivateSettings.h"
@@ -102,6 +120,17 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 #define THE_CLIENT_TYPE WiFiClient // no TLS 
 #endif // USE_TLS_SSL
 #define FOUND_BOARD ESP32
+#endif
+
+#ifdef ARDUINO_SAMD_MKRWIFI1010
+// #define WIFI_CLIENT_CLASS BearSSL::WiFiClientSecure // BearSSL :: WiFiClientSecure not supprted in ESP32 ?
+#undef  WIFI_CLIENT_CLASS
+#ifdef USE_TLS_SSL
+#define WIFI_CLIENT_CLASS  WiFiSSLClient 
+#else
+#define THE_CLIENT_TYPE WiFiClient // no TLS 
+#endif // USE_TLS_SSL
+#define FOUND_BOARD ARDUINO_SAMD_MKRWIFI1010
 #endif
 
 #ifndef FOUND_BOARD
@@ -217,8 +246,16 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 
 #define DEFAULT_DEBUG_MESSAGE DefaultDebugMessage()
 #define SET_HEAP_MESSAGE(thisStr)	       (setHeapMsg(thisStr))
-#define HEAP_DEBUG_PRINT(thisStr)          (Serial.print  (  (DefaultDebugMessage().compareTo(thisStr) == 0) ? (getHeapMsg() + (String)ESP.getFreeHeap()) : (String)thisStr + " Heap = " + (String)ESP.getFreeHeap() + "; ") )
-#define HEAP_DEBUG_PRINTLN(thisStr)        (Serial.println(  (DefaultDebugMessage().compareTo(thisStr) == 0) ? (getHeapMsg() + (String)ESP.getFreeHeap()) : (String)thisStr + " Heap = " + (String)ESP.getFreeHeap() + "; ") )
+
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+	#define HEAP_DEBUG_PRINT(thisStr)          (Serial.print  (  (DefaultDebugMessage().compareTo(thisStr) == 0) ? (getHeapMsg() + (String)ESP.getFreeHeap()) : (String)thisStr + " Heap = " + (String)ESP.getFreeHeap() + "; ") )
+	#define HEAP_DEBUG_PRINTLN(thisStr)        (Serial.println(  (DefaultDebugMessage().compareTo(thisStr) == 0) ? (getHeapMsg() + (String)ESP.getFreeHeap()) : (String)thisStr + " Heap = " + (String)ESP.getFreeHeap() + "; ") )
+#else
+	#define HEAP_DEBUG_PRINT(string)           ((void)0)
+	#define HEAP_DEBUG_PRINTF(string)          ((void)0)
+	#define HEAP_DEBUG_PRINTLN(string)         ((void)0)
+#endif //  ARDUINO_ARCH_ESP8266
+
 #define HEAP_DEBUG_PRINTF(string,uint32_t) (Serial.printf (  string,uint32_t) )
 #endif
 

@@ -25,18 +25,35 @@ SOFTWARE.
 //
 // see: https://github.com/miguelbalboa/rfid
 //
+#include "GlobalDefine.h"
 
 #include <SPI.h>
 #include <MFRC522.h>
+#ifdef ARDUINO_ARCH_ESP8266
 #include <WiFiClientSecure.h>
-#include "GlobalDefine.h"
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+#include <WiFiClientSecure.h>
+#endif
+#ifdef ARDUINO_SAMD_MKRWIFI1010
+#include <WiFiNINA.h>
+#endif
+
 #include "WiFiHelper.h"
 #include "sslHelper.h"
 #include "htmlHelper.h"
 
 // Define our SPI connection and parameters for the RFID reader (VSPI)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
 #define SS_PIN    21
 #define RST_PIN   22
+#endif
+#if defined(ARDUINO_SAMD_MKRWIFI1010)
+#define SS_PIN    7
+#define RST_PIN   6
+#endif
+
+
 #define SIZE_BUFFER     18
 #define MAX_SIZE_BLOCK  16
 
@@ -45,7 +62,7 @@ SOFTWARE.
 // WiFiClient client; // this is the non-TLS/SSL one!
 
 // Use WiFiClientSecure class to create TLS connection
-WiFiClientSecure client;
+WIFI_CLIENT_CLASS client;
 
 // Initialize our FRID reader with a single instance:
 MFRC522 rfid(SS_PIN, RST_PIN);
@@ -62,7 +79,7 @@ void WebServerConnect() {
 		Serial.print("IP address=");
 		Serial.println(WiFi.localIP());
 		Serial.print("MAC address=");
-		Serial.println(WiFi.macAddress());
+		// Serial.println(WiFi.macAddress());
 		int retry = 0;
 		for (size_t i = 60; i > 0; i--)
 		{
@@ -112,7 +129,6 @@ int SaveUID(String thisUID, String thisMessage) {
 #pragma region helpers
 #endif
 
-static const char* HEX_CHARS = "0123456789ABCDEF";
 String UID_Hex(byte* buffer, byte bufferSize) {
 	String res = "";
 	for (byte i = 0; i < bufferSize; i++) {

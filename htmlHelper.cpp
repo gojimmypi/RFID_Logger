@@ -23,6 +23,11 @@
 #pragma message(Reminder "Target hardware is ESP32 for htmlHelper")
 #endif
 
+#ifdef ARDUINO_SAMD_MKRWIFI1010
+#include <WiFiNINA.h>
+#define FOUND_BOARD ARDUINO_SAMD_MKRWIFI1010
+#endif
+
 #ifndef FOUND_BOARD
 #pragma message(Reminder "Error Target hardware not defined !")
 #endif // ! FOUND_BOARD
@@ -57,7 +62,7 @@ String HTML_RequestText(String url) {
 
 // send html request TheRequest to thisClient, return 302 move url in MovedToURL as needed
 // we do NOT follow the 302 here! See HTML_SendRequestFollowMove()
-void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& MovedToURL) {
+void HTML_SendRequest(WIFI_CLIENT_CLASS *thisClient, String TheRequest, String& MovedToURL) {
     String line = "";
     MovedToURL = ""; // if there's a 302 move response location, we'll put it here. If not, it will be sthis empty strong
 
@@ -112,7 +117,7 @@ void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& M
 }
 
 // the non-public HTML_SendRequestFollowMove that keeps track of MoveDepth
-void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest, String& MovedToURL, int MoveDepth ) {
+void HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL, int MoveDepth ) {
     HTTP_DEBUG_PRINTLN("HTML_SendRequestFollowMove=");
 
     HTML_SendRequest(thisClient, TheRequest, MovedToURL);
@@ -140,7 +145,7 @@ void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest,
 }
 
 // Send HTML TheRequest to thisClient, following 302 moves up to 10 deep; we'll start at 0
-void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest, String& MovedToURL) {
+void HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL) {
     HTML_SendRequestFollowMove(thisClient, TheRequest, MovedToURL, 0);
 }
 

@@ -24,12 +24,17 @@
 #pragma message(Reminder "Target hardware: ESP32")
 #endif
 
+#ifdef ARDUINO_SAMD_MKRWIFI1010
+#include <WiFiNINA.h>
+#define FOUND_BOARD ARDUINO_SAMD_MKRWIFI1010
+#endif
+
 #ifndef FOUND_BOARD
 #pragma message(Reminder "Error Target hardware not defined !")
 #endif // ! FOUND_BOARD
 
 String HTML_RequestText(String url);
-void HTML_SendRequest(WiFiClientSecure *thisClient, String TheRequest, String& MovedToURL);
-void HTML_SendRequestFollowMove(WiFiClientSecure* thisClient, String TheRequest, String& MovedToURL); // will follow 302 moves up to 10 times
+void HTML_SendRequest(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL);
+void HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL); // will follow 302 moves up to 10 times
 
 #endif // _HTMLHELPER_h

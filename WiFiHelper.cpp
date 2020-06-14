@@ -25,6 +25,11 @@ extern "C" {
 #define FOUND_BOARD ESP32
 #endif
 
+#ifdef ARDUINO_SAMD_MKRWIFI1010
+#include <WiFiNINA.h>
+#define FOUND_BOARD ARDUINO_SAMD_MKRWIFI1010
+#endif
+
 #ifndef FOUND_BOARD
 #pragma message(Reminder "Error Target hardware not defined !")
 #endif // ! FOUND_BOARD
@@ -32,9 +37,27 @@ extern "C" {
 
 String myMacAddress;
 
+String HexString(byte buffer[], byte bufferSize) {
+	String res = "";
+	for (byte i = 0; i < bufferSize; i++) {
+		res += HEX_CHARS[(buffer[i] >> 4) & 0xF];
+		res += HEX_CHARS[buffer[i] & 0xF];
+	}
+	return res;
+}
+
 String wifiMacAddress() {
 	if (!myMacAddress || (myMacAddress == "")) {
+		myMacAddress = "";
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
 		myMacAddress = WiFi.macAddress(); // this returns 6 hex bytes, delimited by colons
+#endif
+#if defined(ARDUINO_SAMD_MKRWIFI1010)
+		byte mac[6];
+		WiFi.macAddress(mac);
+		myMacAddress = HexString(mac, 6);
+#endif
+
 		myMacAddress.replace(":", "");
 		myMacAddress.replace("-", ""); // probably not used, but just in case they MAC address starts returning other well known delimiters such as dash
 		myMacAddress.replace(" ", ""); // or perhaps even a space
@@ -59,10 +82,10 @@ void WiFiStart(bool EnterpriseMode = false) {
 		// Setting ESP into STATION mode only (no AP mode or dual mode)
 		WIFI_DEBUG_PRINTLN("Enterprise mode configured...");
 
+#ifdef ARDUINO_ARCH_ESP8266
 		WiFi.disconnect(true);
 
-#ifdef ARDUINO_ARCH_ESP8266
-	// WPA2 Connection starts here
+		// WPA2 Connection starts here
 	// Setting ESP into STATION mode only (no AP mode or dual mode)
 		WIFI_DEBUG_PRINTLN("Starting ESP8266 Enterprise WiFi...");
 		wifi_set_opmode(STATION_MODE);
@@ -81,28 +104,37 @@ void WiFiStart(bool EnterpriseMode = false) {
 		wifi_station_set_enterprise_password((uint8*)SECRET_EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD));
 		wifi_station_connect();
 		// WPA2 Connection ends here
-
-#else
-
-	#ifdef ARDUINO_ARCH_ESP32
-			WIFI_DEBUG_PRINTLN("Starting ESP32 Enterprise WiFi...");
-			WiFi.mode(WIFI_STA); // be sure to set mode FIRST
-			esp_wifi_sta_wpa2_ent_set_identity((uint8_t*)SECRET_EAP_ID, strlen(SECRET_EAP_ID)); //provide identity
-			esp_wifi_sta_wpa2_ent_set_username((uint8_t*)SECRET_EAP_USERNAME, strlen(SECRET_EAP_USERNAME)); //provide username
-			esp_wifi_sta_wpa2_ent_set_password((uint8_t*)SECRET_EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD)); //provide password
-			esp_wpa2_config_t config = WPA2_CONFIG_INIT_DEFAULT();
-			esp_wifi_sta_wpa2_ent_enable(&config);
-			WiFi.begin(SECRET_WIFI_SSID);
-	#else
-			"only ESP32 and ESP82666 supported at this time!"
-	#endif
 #endif
+
+#ifdef ARDUINO_ARCH_ESP32
+		WiFi.disconnect(true);
+
+		WIFI_DEBUG_PRINTLN("Starting ESP32 Enterprise WiFi...");
+		WiFi.mode(WIFI_STA); // be sure to set mode FIRST
+		esp_wifi_sta_wpa2_ent_set_identity((uint8_t*)SECRET_EAP_ID, strlen(SECRET_EAP_ID)); //provide identity
+		esp_wifi_sta_wpa2_ent_set_username((uint8_t*)SECRET_EAP_USERNAME, strlen(SECRET_EAP_USERNAME)); //provide username
+		esp_wifi_sta_wpa2_ent_set_password((uint8_t*)SECRET_EAP_PASSWORD, strlen(SECRET_EAP_PASSWORD)); //provide password
+		esp_wpa2_config_t config = WPA2_CONFIG_INIT_DEFAULT();
+		esp_wifi_sta_wpa2_ent_enable(&config);
+		WiFi.begin(SECRET_WIFI_SSID);
+#endif
+
+#ifdef ARDUINO_SAMD_MKRWIFI1010
+		WiFi.disconnect();
+
+		WIFI_DEBUG_PRINTLN("Starting WiFiNINA Enterprise WiFi...(not implemented in early WiFiNINA Versions, see Version 1.5.0 or later)");
+		WiFi.beginEnterprise(SECRET_WIFI_SSID, SECRET_EAP_USERNAME, SECRET_EAP_PASSWORD);
+#endif // ARDUINO_SAMD_MKRWIFI1010
 
 	}
 	else {
 		WIFI_DEBUG_PRINTLN("Starting regular Wi-Fi...");
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
 		WiFi.mode(WIFI_STA);
+#else
+		// station mode assumed.
+#endif
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
 		WiFi.begin(SECRET_WIFI_SSID, WIFI_PWD);
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
@@ -140,7 +172,11 @@ int wifiConnect(int maxAttempts) {
 				WiFi.disconnect();
 				delay(5000);
 				WIFI_DEBUG_PRINTLN("WiFi Retrying. ");
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
 				WiFi.mode(WIFI_STA);
+#else
+				// station mode assumed.
+#endif
 				WiFi.begin(SECRET_WIFI_SSID, WIFI_PWD);
 				// TODO reboot?
 			}
