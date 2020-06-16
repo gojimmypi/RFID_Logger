@@ -103,8 +103,9 @@ int SaveUID(String thisUID, String thisMessage) {
 	if (thisUID) {
 		if (!WiFiConnected()) {
 			wifiConnect(50);
-			WebServerConnect();
 		}
+
+		WebServerConnect();
 
 		if (!client.connected()) {
 			Serial.println("SaveUID when wifi client.connected is false; check firewall on receiver");
@@ -113,11 +114,13 @@ int SaveUID(String thisUID, String thisMessage) {
 			return 2;
 		}
 		Serial.println("Saving UID");
-		String url = "/RFID/default.aspx?UID=" + thisUID + "&MAC=" + wifiMacAddress() + "&MSG=" + thisMessage; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
+		String url = String(SECRET_APP_PATH) + "?UID=" + thisUID + "&MAC=" + wifiMacAddress() + "&MSG=" + thisMessage; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
 		String thisRequest = HTML_RequestText(url);
 		String thisMovedRequestURL = "";
 		HTML_SendRequestFollowMove(&client, thisRequest, thisMovedRequestURL);
-
+		client.flush();
+		delay(100);
+		client.stop();
 		return 0;
 	}
 	else {
@@ -174,8 +177,6 @@ void setup() {
 	//wifiConnect(50);
 
 
-	SaveUID("00000000", "Startup"); // save a marker at startup time
-
 	// testSSL();
 
 	SPI.begin(); // Init SPI bus
@@ -189,6 +190,25 @@ void setup() {
 	Serial.print(F("Using the following key:"));
 	printHex(key.keyByte, MFRC522::MF_KEY_SIZE);
 
+	SaveUID("00000000", "Startup"); // save a marker at startup time
+
+	// some reconnection tests...
+	//delay(1000);
+	//SaveUID("00000001", "Startup"); // save a marker at startup time
+	//delay(5000);
+	//SaveUID("00000005", "Startup"); // save a marker at startup time
+	//delay(20000);
+	//SaveUID("00000020", "Startup"); // save a marker at startup time
+	//delay(60000);
+	//SaveUID("00000060", "Startup"); // save a marker at startup time
+	//delay(120000);
+	//SaveUID("00000120", "Startup"); // save a marker at startup time
+	//delay(240000);
+	//SaveUID("00000240", "Startup"); // save a marker at startup time
+	//delay(1000000);
+	//SaveUID("00001000", "Startup"); // save a marker at startup time
+
+	Serial.println("Setup complete: awaiting card...");
 }
 
 bool IsCardReady() {

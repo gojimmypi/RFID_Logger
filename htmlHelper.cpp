@@ -56,7 +56,7 @@ String HTML_RequestText(String url) {
     return String("GET ") + url + " HTTP/1.1\r\n" +
         "Host: " + SECRET_APP_HOST + "\r\n" +
         "Accept-Language: en-US\r\n" +
-        "User-Agent: ESP32_RFID\r\n" +
+        "User-Agent: RFID-Logger\r\n" +
         "Connection: keep-alive\r\n\r\n"; // we may need to follow a 302; see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Connection
 }
 
