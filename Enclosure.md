@@ -6,9 +6,9 @@ Often the hard part for the DIY maker is getting USB power to to board inside th
 is to perfectly mount the board near the perimeter of the box. Then, use a drill or dremmel tool to cut
 a nice, perfectly shaped USB connector hole. Easier said than done.
 
-One possibility is to 3D print an enclosure. Not everyone has accecss to a 3D print
+One possibility is to 3D print an enclosure. Not everyone has access to a 3D printer.
 
-An alternative method is to drill a hole at seam between the lid and the box. For best results, have the lid
+An alternative method is to drill a hole at the seam between the lid and the box. For best results, have the lid
 snuggly secured when drilling:
 
 ![drill_enclosure_hole.png](./images/drill_enclosure_hole.png)
@@ -23,14 +23,14 @@ As half of the hol is in the base, and the other it in in lid, cable insertion i
 
 USB cables come in different size diameters, to it is best to measure to get a nice tight fit.
 
-For long term durability it is best to get boards withouot headers already soldered, 
-and solder the wires directly to the board. In for prototypes, it is usually best to use jumper wires.
+For long term durability it is best to get boards without headers already soldered, 
+and solder the wires directly to the board. For prototypes, it is usually best to use jumper wires.
 
 Here's a closeup of jumper wires connected to the RFID Reader Board:
 
 ![rfid_rc522_wiring](./images/rfid_rc522_wiring.png)
 
-Here's a closeup of the other end of the wires, conencted to the MKR WiFi 1010 board:
+Here's a closeup of the other end of the wires, connected to the MKR WiFi 1010 board:
 
 ![arduino_wiring_closeup](./images/arduino_wiring_closeup.png)
 
@@ -50,9 +50,9 @@ Enclosure lid in place:
 
 ![enclosure_hole_closed_closeup](./images/enclosure_hole_closed_closeup.png)
 
-Note that for maximum range, the RFID PCB with the printing should be as close to the swipe seruface as possible. 
+Note that for maximum range, the RFID PCB with the printing should be as close to the swipe surface as possible. 
 The side with the printing is the side with the copper traces as an antenna. It will work from either side, but 
-might as well do everything possible for best range.
+might as well do everything possible for the best range.
 
 
 
