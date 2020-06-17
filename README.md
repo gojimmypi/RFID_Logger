@@ -10,15 +10,19 @@ along with an RFID reader such as [this Mifare RC522 RFID Reader on Amazon](http
 The intention of this project is to keep track of staff movements similar to an IN/OUT attendance board. Clearly much of the reliability
 and accuracy is based on the honor system to ensure cards are consistently used. 
 
+The [Arduino MKRWi-Fi 1010](https://store.arduino.cc/usa/mkr-wifi-1010), as well as the NodeMCU ESP8266 can also be used by uncommenting the settings in the [GlobalDefine.h](./https://github.com/gojimmypi/RFID_Logger/blob/dec6eb6a446ac1d67fdf67370868be06a23d12a4/GlobalDefine.h#L26) file.
+
+See [Project Emclosure Assembly Information](./Enclosure.md).
+
 ![lid cover view](./images/lid_cover_view.png)
 
 ## Operation
 
-The ESP32 microcontroller board waits for a card to be detected. Once a card is present, the UID is read and sent to a web server over HTTPS and saves in a SQL table.
+The microcontroller waits for a card to be detected. Once a card is present, the UID is read and sent to a web server over HTTPS which saves the information in a SQL table.
 
 In concept, this project could be used to control pretty much anything with the swipe of an RFID card. The receiving code could also be readily modified to save data to other databases, or even a text file.
 
-Although this project focuses on the ESP32, the ESP8266 also works. Both regular and enterprise authentication are also supported.
+Although this project focuses on the ESP32, the ESP8266 and MKR WiFi 1010 can also be used. Both regular and enterprise authentication are also supported.
 
 If you are interested in _guest authentication_, check out my [desktop dashboard](https://github.com/gojimmypi/DesktopDashboard) that programmatically clicks the "_I accept terms and conditions_" and (simulates) pressing `enter` to connect to internet.
 Guest authentication is not (yet) implemented here.
@@ -56,7 +60,7 @@ inadvertantly saved to GitHub. But yes, you can set this and edit the settings d
 The code is Arduino-style C created in Visual Studio using the [Visual Micro Extension](https://www.visualmicro.com/); see also the [Arduino IDE for Visual Studio (Visual Micro) on the marketplace](https://marketplace.visualstudio.com/items?itemName=VisualMicro.ArduinoIDEforVisualStudio). 
 It should also work just fine in the Arduino IDE (see the [RFID_Logger.ino](./RFID_Logger.ino) file)
 
-Check the the `ESP32 WROVER` is selected, and the appropriate settings for either environment:
+Check the the proper board is selected (e.g. `ESP32 WROVER` for the ThingPulse board), and the appropriate settings for either environment:
 
 ### Build with Visual Studio and Visual Micro Arduino IDE Extension.
 
@@ -75,7 +79,7 @@ Open `RFID_Logger.ino` in the Arduino IDE. Check settings and select your COM po
 ## Supported Hardware
 
 Any Arduino-style device with Wi-Fi and SPI capabilities could probably be used;
-at this time both the ESP8266 and ESP32 are supported, using either regular or enterprise Wi-Fi, and communicating over SSL. 
+at this time both the ESP8266 and ESP32 are supported, as well as the Ardunio MKR WiFi 1010, using either regular or enterprise Wi-Fi, and communicating over SSL. 
 
 # Design Concepts
 
@@ -160,6 +164,9 @@ Essentials:
 * [Easy EDA RFID MFRC522](https://easyeda.com/gerrychen/RFID_MFRC522-lHBSasmEW)
 * [Visual Micro Arduino IDE](https://www.visualmicro.com/) for [Visual Studio](https://visualstudio.microsoft.com/)
 * [ESP8266 Install / Boards Manager](https://arduino-esp8266.readthedocs.io/en/latest/installing.html#using-git-version)
+
+MKR WiFi 1010
+* [arduino.cc Guide ](https://www.arduino.cc/en/Guide/MKRWiFi1010)
 
 Code samples:
 * [espressif/arduino-esp32 WiFiClientSecureEnterprise.ino example](https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFiClientSecure/examples/WiFiClientSecureEnterprise/WiFiClientSecureEnterprise.ino)
