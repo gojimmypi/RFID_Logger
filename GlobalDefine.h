@@ -58,17 +58,20 @@ static const char* HEX_CHARS = "0123456789ABCDEF";
 #pragma message(Reminder "Settings needed !")
 // create your own myPrivateSettings.h, or update the following lines in a SEPARATE file not included in your repo:
 static const char* SECRET_WIFI_SSID = "my-wifi-SSID"
-static const bool IS_EAP = true; // set to true for enterprise access point authentication, otherwise false for regular wifi
+static const bool IS_EAP = true;											// set to true for enterprise access point authentication, otherwise false for regular (personal) wifi
 
-static const char* SECRET_WIFI_PWD = "my-WiFi-PASSWORD";     // SSID password for regular Wi-Fi; user password for enterprise 
-static const char* SECRET_WIFI_USERNAME = "my-WiFi-USERNAME" // for enterprise logins
+// WPA2 Personal Settings 
+static const char* SECRET_WIFI_PWD = "my-WiFi-PASSWORD";					// SSID password for regular Wi-Fi; user password for enterprise 
 
-static const char* SECRET_EAP_ID = "my-Enterprise-ID"                      // EAP_ID (typically the same as EAP_USERNAME, e.g. domain\\my-Enterpeise-UserName) 
-static const char* SECRET_EAP_USERNAME = "domain\\my-Enterpeise-UserName"; // Username for authentification (typically the same as EAP_ID); consider trying also username@yourdomain.com
-static const char* SECRET_EAP_PASSWORD = "my-Enterpeise-Password";         // Password for authentication
-static const int APP_HTTPS_PORT = 443; // the TLS/SSL port (typically 443)
-static const char* SECRET_APP_HOST = "contoso.com";                        // The primary host for this application
-static const char* SECRET_APP_PATH = "/RFID/default.aspx";                 // The application path and page name to send results
+// WPA2 Enterprise Settings
+static const char* SECRET_EAP_ID = "my-Enterprise-ID"						// EAP_ID (typically the same as EAP_USERNAME, e.g. domain\\my-Enterpeise-UserName) 
+static const char* SECRET_EAP_USERNAME = "domain\\my-Enterprise-UserName";	// Username for authentification (typically the same as EAP_ID); consider trying also username@yourdomain.com
+static const char* SECRET_EAP_PASSWORD = "my-Enterpeise-Password";			// Password for authentication
+
+static const int APP_HTTPS_PORT = 443;										// the TLS/SSL port (typically 443)
+static const char* SECRET_APP_HOST = "contoso.com";							// The primary host for this application
+static const char* SECRET_APP_PATH = "/RFID/default.aspx";					// The application path and page name to send results
+
 static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 50 A4 66 76 47 C6 A1 8C A0 07 AA ED BB 8E"; // SHA1 fingerprint copy this from APP_HOST certificate thumbprint to use for fingerprint setting
 #endif
 //**************************************************************************************************************
@@ -80,18 +83,19 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 //**************************************************************************************************************
 // debugging options
 //**************************************************************************************************************
-// #define SCREEN_DEBUG // when defined, display low level screen debug info 
-// #define SCREEN_DATA_DEBUG // when defined, print screen data also to serial terminal
-// #define JSON_DEBUG // when defined, display JSON debug info 
-#define WIFI_DEBUG // when defined, display WiFi debug info 
+// #define SCREEN_DEBUG        // when defined, display low level screen debug info 
+// #define SCREEN_DATA_DEBUG   // when defined, print screen data also to serial terminal
+// #define JSON_DEBUG          // when defined, display JSON debug info 
+#define WIFI_DEBUG          // when defined, display WiFi debug info 
 #define SERIAL_SCREEN_DEBUG // when defined, display screen messages to serial port
-#define HTTP_DEBUG // when defined, display WiFi debug info 
-#define DEBUG_SEPARATOR "***********************************"
-#define TIMER_DEBUG // when defined, display diagnostic timer info
-#define HEAP_DEBUG // when defined, display diagnostic heap info
+#define HTTP_DEBUG          // when defined, display HTTP debug info 
+#define HTTP_HEADER_DEBUG   // when defined, print HTTP headers
+#define TIMER_DEBUG         // when defined, display diagnostic timer info
+#define HEAP_DEBUG          // when defined, display diagnostic heap info
 #define HARDWARE_DEBUG
 // #define SPIFFS_DEBUG
 #define RFID_DEBUG // when defined, show RFID debug info
+#define DEBUG_SEPARATOR F("***********************************")
 
 //**************************************************************************************************************
 // board-architecture-dependent WIFI_CLIENT_CLASS type selector 
@@ -114,24 +118,24 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 
 #ifdef ARDUINO_ARCH_ESP32
 // #define WIFI_CLIENT_CLASS BearSSL::WiFiClientSecure // BearSSL :: WiFiClientSecure not supprted in ESP32 ?
-#undef  WIFI_CLIENT_CLASS
-#ifdef USE_TLS_SSL
-#define WIFI_CLIENT_CLASS  WiFiClientSecure //  WiFiClientSecure default
+  #undef  WIFI_CLIENT_CLASS
+  #ifdef USE_TLS_SSL
+  #define WIFI_CLIENT_CLASS  WiFiClientSecure //  WiFiClientSecure default
 #else
-#define THE_CLIENT_TYPE WiFiClient // no TLS 
-#endif // USE_TLS_SSL
-#define FOUND_BOARD ESP32
+  #define THE_CLIENT_TYPE WiFiClient // no TLS 
+  #endif // USE_TLS_SSL
+  #define FOUND_BOARD ESP32
 #endif
 
 #ifdef ARDUINO_SAMD_MKRWIFI1010
-// #define WIFI_CLIENT_CLASS BearSSL::WiFiClientSecure // BearSSL :: WiFiClientSecure not supprted in ESP32 ?
-#undef  WIFI_CLIENT_CLASS
-#ifdef USE_TLS_SSL
-#define WIFI_CLIENT_CLASS  WiFiSSLClient 
-#else
-#define THE_CLIENT_TYPE WiFiClient // no TLS 
-#endif // USE_TLS_SSL
-#define FOUND_BOARD ARDUINO_SAMD_MKRWIFI1010
+  // #define WIFI_CLIENT_CLASS BearSSL::WiFiClientSecure // BearSSL :: WiFiClientSecure not supprted in ESP32 ?
+  #undef  WIFI_CLIENT_CLASS
+  #ifdef USE_TLS_SSL
+    #define WIFI_CLIENT_CLASS  WiFiSSLClient 
+  #else
+    #define THE_CLIENT_TYPE WiFiClient // no TLS 
+  #endif // USE_TLS_SSL
+  #define FOUND_BOARD ARDUINO_SAMD_MKRWIFI1010
 #endif
 
 #ifndef FOUND_BOARD
@@ -186,6 +190,19 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 //**************************************************************************************************************
 
 //**************************************************************************************************************
+#ifdef HTTP_HEADER_DEBUG
+#define HTTP_HEADER_DEBUG_PRINT(string)           (Serial.print(string))
+#define HTTP_HEADER_DEBUG_PRINTLN(string)         (Serial.println(string))
+#endif
+
+#ifndef HTTP_HEADER_DEBUG
+#define HTTP_HEADER_DEBUG_PRINT(string)           ((void)0)
+#define HTTP_HEADER_DEBUG_PRINTLN(string)         ((void)0)
+#endif
+//**************************************************************************************************************
+
+
+//**************************************************************************************************************
 #ifdef SCREEN_DEBUG
 #define SCREEN_DEBUG_PRINT(string)         (Serial.print(string))
 #define SCREEN_DEBUG_PRINTLN(string)       (Serial.println(string))
@@ -233,6 +250,19 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 #ifndef TIMER_DEBUG
 #define TIMER_DEBUG_PRINT(string)           ((void)0)
 #define TIMER_DEBUG_PRINTLN(string)         ((void)0)
+#endif
+
+//**************************************************************************************************************
+
+//**************************************************************************************************************
+#ifdef RFID_DEBUG
+#define RFID_DEBUG_PRINT(string)           (Serial.print(string))
+#define RFID_DEBUG_PRINTLN(string)         (Serial.println(string))
+#endif
+
+#ifndef RFID_DEBUG
+#define RFID_DEBUG_PRINT(string)           ((void)0)
+#define RFID_DEBUG_PRINTLN(string)         ((void)0)
 #endif
 
 //**************************************************************************************************************
