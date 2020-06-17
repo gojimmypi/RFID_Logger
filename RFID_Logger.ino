@@ -75,20 +75,20 @@ byte nuidPICC[4];
 
 void WebServerConnect() {
 	while (!client.connect(SECRET_APP_HOST, APP_HTTPS_PORT)) {
-		Serial.println("client.connect failed; check firewall on receiver");
-		Serial.print("IP address=");
+		Serial.println(F("client.connect failed; check firewall on receiver"));
+		Serial.print(F("IP address="));
 		Serial.println(WiFi.localIP());
-		Serial.print("MAC address=");
-		// Serial.println(WiFi.macAddress());
+		Serial.print(F("MAC address="));
+		Serial.println(wifiMacAddress());
 		int retry = 0;
 		for (size_t i = 60; i > 0; i--)
 		{
-			Serial.print(".");
+			Serial.print(F("."));
 			Serial.print(i);
 			delay(1000);
 		}
 		Serial.println();
-		Serial.println("Trying again!");
+		Serial.println(F("Trying again!"));
 	}
 
 }
@@ -108,13 +108,13 @@ int SaveUID(String thisUID, String thisMessage) {
 		WebServerConnect();
 
 		if (!client.connected()) {
-			Serial.println("SaveUID when wifi client.connected is false; check firewall on receiver");
-			Serial.print("IP address=");
+			Serial.println(F("SaveUID when wifi client.connected is false; check firewall on receiver"));
+			Serial.print(F("IP address="));
 			Serial.println(WiFi.localIP());
 			return 2;
 		}
-		Serial.println("Saving UID");
-		String url = String(SECRET_APP_PATH) + "?UID=" + thisUID + "&MAC=" + wifiMacAddress() + "&MSG=" + thisMessage; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
+		Serial.println(F("Saving UID"));
+		String url = String(SECRET_APP_PATH) + F("?UID=") + thisUID + F("&MAC=") + wifiMacAddress() + F("&MSG=") + thisMessage; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
 		String thisRequest = HTML_RequestText(url);
 		String thisMovedRequestURL = "";
 		HTML_SendRequestFollowMove(&client, thisRequest, thisMovedRequestURL);
@@ -172,12 +172,7 @@ void setup() {
 	while (!Serial) {
 		delay(10);
 	}
-	Serial.println("Hello RFID_Logger!");
-
-	//wifiConnect(50);
-
-
-	// testSSL();
+	Serial.println(F("Hello RFID_Logger!"));
 
 	SPI.begin(); // Init SPI bus
 	rfid.PCD_Init(); // Init MFRC522 
@@ -186,7 +181,7 @@ void setup() {
 		key.keyByte[i] = 0xFF;
 	}
 
-	Serial.println(F("This code scan the MIFARE Classsic NUID."));
+	Serial.println(F("This code scans the MIFARE Classsic NUID."));
 	Serial.print(F("Using the following key:"));
 	printHex(key.keyByte, MFRC522::MF_KEY_SIZE);
 
@@ -208,7 +203,7 @@ void setup() {
 	//delay(1000000);
 	//SaveUID("00001000", "Startup"); // save a marker at startup time
 
-	Serial.println("Setup complete: awaiting card...");
+	Serial.println(F("Setup complete: awaiting card..."));
 }
 
 bool IsCardReady() {
@@ -216,7 +211,7 @@ bool IsCardReady() {
 		return false;
 	}
 	if (!rfid.PICC_ReadCardSerial()) {
-		Serial.println(F("PICC_IsNewCardPresent but not PICC_ReadCardSerial."));
+		RFID_DEBUG_PRINT(F("PICC_IsNewCardPresent but not PICC_ReadCardSerial."));
 		return false;
 	}
 	MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
@@ -224,7 +219,7 @@ bool IsCardReady() {
 		piccType != MFRC522::PICC_TYPE_MIFARE_1K &&
 		piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
 
-		Serial.println(F("Card type not valid."));
+		RFID_DEBUG_PRINT(F("Card type not valid."));
 		return false;
 	}
 	return true;
@@ -243,7 +238,7 @@ void loop() {
 		String detectedUID = UID_Hex(rfid.uid.uidByte, rfid.uid.size);
 		Serial.println(detectedUID);
 
-		SaveUID(detectedUID, "Detected");
+		SaveUID(detectedUID, F("Detected"));
 
 		// Halt PICC
 		rfid.PICC_HaltA();
