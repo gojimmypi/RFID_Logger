@@ -89,8 +89,9 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 #define WIFI_DEBUG          // when defined, display WiFi debug info 
 #define SERIAL_SCREEN_DEBUG // when defined, display screen messages to serial port
 #define HTTP_DEBUG          // when defined, display HTTP debug info 
-#define HTTP_HEADER_DEBUG   // when defined, print HTTP headers
-#define TIMER_DEBUG         // when defined, display diagnostic timer info
+// #define HTTP_HEADER_DEBUG   // when defined, print HTTP headers
+// #define HTTP_RESPONSE_DEBUG // when defined, print HTTP response text (first line printed with HTTP_DEBUG) 
+// #define TIMER_DEBUG         // when defined, display diagnostic timer info
 #define HEAP_DEBUG          // when defined, display diagnostic heap info
 #define HARDWARE_DEBUG
 // #define SPIFFS_DEBUG
@@ -201,6 +202,18 @@ static const char CERTIFICATE_DETAILS_THUMBPRINT[] PROGMEM = "5F 3F 7A C2 56 9F 
 #endif
 //**************************************************************************************************************
 
+
+//**************************************************************************************************************
+#ifdef HTTP_RESPONSE_DEBUG
+#define HTTP_RESPONSE_DEBUG_PRINT(string)           (Serial.print(string))
+#define HTTP_RESPONSE_DEBUG_PRINTLN(string)         (Serial.println(string))
+#endif
+
+#ifndef HTTP_RESPONSE_DEBUG
+#define HTTP_RESPONSE_DEBUG_PRINT(string)           ((void)0)
+#define HTTP_RESPONSE_DEBUG_PRINTLN(string)         ((void)0)
+#endif
+//**************************************************************************************************************
 
 //**************************************************************************************************************
 #ifdef SCREEN_DEBUG
