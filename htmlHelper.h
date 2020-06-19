@@ -34,7 +34,7 @@
 #endif // ! FOUND_BOARD
 
 String HTML_RequestText(String url);
-void HTML_SendRequest(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL);
-void HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL); // will follow 302 moves up to 10 times
+int HTML_SendRequest(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL);
+int HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL); // will follow 302 moves up to 10 times
 
 #endif // _HTMLHELPER_h

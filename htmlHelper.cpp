@@ -62,7 +62,9 @@ String HTML_RequestText(String url) {
 
 // send html request TheRequest to thisClient, return 302 move url in MovedToURL as needed
 // we do NOT follow the 302 here! See HTML_SendRequestFollowMove()
-void HTML_SendRequest(WIFI_CLIENT_CLASS *thisClient, String TheRequest, String& MovedToURL) {
+// return 0 for success
+int HTML_SendRequest(WIFI_CLIENT_CLASS *thisClient, String TheRequest, String& MovedToURL) {
+    int result = 1;
     String line = "";
     MovedToURL = ""; // if there's a 302 move response location, we'll put it here. If not, it will be sthis empty strong
 
@@ -102,11 +104,22 @@ void HTML_SendRequest(WIFI_CLIENT_CLASS *thisClient, String TheRequest, String& 
     HTTP_DEBUG_PRINTLN("reply:");
     HTTP_DEBUG_PRINTLN("==========");
 
-    // we'll continue to read everything... but if using the supplied web app, 
+    // we'll continue to read everything i nthe response... but if using the supplied web app, 
     // the only thing returned should be a number: the primary key of the record added in the SQL table
+    int ResponseLineCount = 0;
     while ((*thisClient).available()) {
+        ResponseLineCount++;
         line = (*thisClient).readStringUntil('\n');
-        HTTP_DEBUG_PRINTLN(line);
+        if (ResponseLineCount == 1) {
+            if (line != "") {
+                result = 0; // TODO check for numeric value in our custom page, for now a non-blank response is considered success
+            }
+
+            HTTP_DEBUG_PRINTLN(line);
+        }
+        else {
+            HTTP_RESPONSE_DEBUG_PRINT(line);
+        }
         yield();
     }
 
@@ -114,13 +127,15 @@ void HTML_SendRequest(WIFI_CLIENT_CLASS *thisClient, String TheRequest, String& 
     HTTP_DEBUG_PRINTLN("");
     HTTP_DEBUG_PRINTLN("End HTML_SendRequest");
     HTTP_DEBUG_PRINTLN("");
+    return result;
 }
 
 // the non-public HTML_SendRequestFollowMove that keeps track of MoveDepth
-void HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL, int MoveDepth ) {
+int HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL, int MoveDepth ) {
+    int result = 1;
     HTTP_DEBUG_PRINTLN("HTML_SendRequestFollowMove=");
 
-    HTML_SendRequest(thisClient, TheRequest, MovedToURL);
+    result = HTML_SendRequest(thisClient, TheRequest, MovedToURL);
 
     HTTP_DEBUG_PRINT("thisMovedRequestURL=");
     HTTP_DEBUG_PRINTLN(MovedToURL);
@@ -138,14 +153,14 @@ void HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest
 
         // we'll only recursively follow up to 10 moves. (typically there's only one, such as default.aspx moved to default    
         if (MoveDepth < 10) {
-            HTML_SendRequestFollowMove(thisClient, thisMovedRequest, MovedToURL, MoveDepth + 1);
+            result = HTML_SendRequestFollowMove(thisClient, thisMovedRequest, MovedToURL, MoveDepth + 1);
         }
     }
-
+    return result;
 }
 
 // Send HTML TheRequest to thisClient, following 302 moves up to 10 deep; we'll start at 0
-void HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL) {
-    HTML_SendRequestFollowMove(thisClient, TheRequest, MovedToURL, 0);
+int HTML_SendRequestFollowMove(WIFI_CLIENT_CLASS* thisClient, String TheRequest, String& MovedToURL) {
+    return HTML_SendRequestFollowMove(thisClient, TheRequest, MovedToURL, 0);
 }
 
