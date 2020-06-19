@@ -66,7 +66,7 @@ String wifiMacAddress() {
     return myMacAddress;
 }
 
-void WiFiStart(bool EnterpriseMode = false) {
+void WiFiStart(bool EnterpriseMode) {
 	WIFI_DEBUG_PRINTLN(DEBUG_SEPARATOR);
 	WIFI_DEBUG_PRINT("wifiConnect: Connecting to ");
 	WIFI_DEBUG_PRINTLN(SECRET_WIFI_SSID);
@@ -136,7 +136,7 @@ void WiFiStart(bool EnterpriseMode = false) {
 		// station mode assumed.
 #endif
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
-		WiFi.begin(SECRET_WIFI_SSID, WIFI_PWD);
+		WiFi.begin(SECRET_WIFI_SSID, SECRET_WIFI_PWD);
 		HEAP_DEBUG_PRINTLN(DEFAULT_DEBUG_MESSAGE);
 	}
 }
@@ -168,16 +168,18 @@ int wifiConnect(int maxAttempts) {
             countAttempt++;
             if (countAttempt > maxAttempts) {
 				countAttempt = 0;
-				WIFI_DEBUG_PRINTLN("WiFi Disconnect... ");
+				WIFI_DEBUG_PRINTLN(F("WiFi Disconnect... "));
 				WiFi.disconnect();
 				delay(5000);
-				WIFI_DEBUG_PRINTLN("WiFi Retrying. ");
+				WIFI_DEBUG_PRINT(F("WiFi Retrying. "));
+				WIFI_DEBUG_PRINTLN(F(SECRET_WIFI_SSID));
+
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
 				WiFi.mode(WIFI_STA);
 #else
 				// station mode assumed.
 #endif
-				WiFi.begin(SECRET_WIFI_SSID, WIFI_PWD);
+				WiFi.begin(SECRET_WIFI_SSID, SECRET_WIFI_PWD);
 				// TODO reboot?
 			}
 		}
