@@ -74,16 +74,19 @@ MFRC522::MIFARE_Key key;
 // Init array that will store new NUID 
 byte nuidPICC[4];
 
-void WebServerConnect() {
+void WebServerConnect(int retry) {
 	while (!client.connect(SECRET_APP_HOST, APP_HTTPS_PORT)) {
+		if (retry == 0) {
+			Serial.println(F("client.connect failed; check firewall on receiver. giving up..."));
+			break;
+		}
 		// TODO what if the web server is down? we shouldn't wait here forever...
 		Serial.println(F("client.connect failed; check firewall on receiver"));
 		Serial.print(F("IP address="));
 		Serial.println(WiFi.localIP());
 		Serial.print(F("MAC address="));
 		Serial.println(wifiMacAddress());
-		int retry = 0;
-		for (size_t i = 60; i > 0; i--)
+		for (int i = retry; i > 0; i--)
 		{
 			Serial.print(F("."));
 			Serial.print(i);
@@ -101,9 +104,8 @@ bool WiFiConnected() {
 
 typedef struct ItemUID {
 	String UID = "";
-//	String MAC = "";
-	String IP = "";
 	String MSG = "";
+	unsigned long timestamp;
 	bool sent = false;
 };
 
@@ -121,7 +123,7 @@ int SendQueue() {
 	SendAttempts++;
 
 	if (WiFiConnected()) {
-		WebServerConnect();
+		WebServerConnect(0); // zero retries, we check again on the next loop
 
 		if (!client.connected()) {
 			Serial.println(F("SaveUID when wifi client.connected is false; check firewall on receiver"));
@@ -135,43 +137,65 @@ int SendQueue() {
 		Serial.println(QueueOfUID.size());
 
 		bool HasUnsentItems = false;
+		bool SentAnItem = false; // sincce web communications takes some time, we'll only send one at a time
+
 		int thisResult = -1;
 		for (uint i = 0; i < QueueOfUID.size(); i++)
 		{
 			if (QueueOfUID[i].sent) {
-				Serial.println(F("Item already sent"));
+				Serial.print(F("Item already sent: "));
+				Serial.print(i);
+				Serial.print(F("; timestamp: "));
+				Serial.println(QueueOfUID[i].timestamp);
 			}
 			else {
-				Serial.println(F("Saving UID"));
-				String url = String(SECRET_APP_PATH)
-					+ F("?UID=") + QueueOfUID[i].UID
-					+ F("&MAC=") + wifiMacAddress()
-					+ F("&MSG=") + QueueOfUID[i].MSG; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
-				String thisRequest = HTML_RequestText(url);
-				String thisMovedRequestURL = "";
-				thisResult = HTML_SendRequestFollowMove(&client, thisRequest, thisMovedRequestURL);
-				if (thisResult == 0) {
-					// TODO check if successful, for now, assume it was 
-					// HasUnsentItems = true // if it fails we have an unsent item
-					Serial.println(F("Item successfully sent!"));
-					QueueOfUID[i].sent = true;
+				if (SentAnItem) {
+					// we already sent an item, but another was found. if it hasn't been sent, we'll do it later
+					if (QueueOfUID[i].sent == false) {
+						Serial.println("Skipping another unsent item...");
+						HasUnsentItems = true;
+						break;
+					}
 				}
 				else {
-					Serial.println(F("Item NOT sent!"));
-					HasUnsentItems = true;
+					Serial.print(F("Sending UID Item "));
+					Serial.print(i);
+					Serial.print(F("; timestamp: "));
+					Serial.println(QueueOfUID[i].timestamp);
+					String url = String(SECRET_APP_PATH)
+						+ F("?UID=") + QueueOfUID[i].UID
+						+ F("&MAC=") + wifiMacAddress()
+						+ F("&IP=") + WiFi.localIP()
+						+ F("&MSG=") + QueueOfUID[i].MSG; // reminder that IIS will return a 302 (moved) for default.aspx that points to default  :/
+					String thisRequest = HTML_RequestText(url);
+					String thisMovedRequestURL = "";
+					thisResult = HTML_SendRequestFollowMove(&client, thisRequest, thisMovedRequestURL);
+					if (thisResult == 0) {
+						// TODO check if successful, for now, assume it was 
+						// HasUnsentItems = true // if it fails we have an unsent item
+						Serial.println(F("Item successfully sent!"));
+						QueueOfUID[i].sent = true;
+						SentAnItem = true;
+					}
+					else {
+						Serial.println(F("Item NOT sent!"));
+						HasUnsentItems = true;
+					}
+
+
+					client.flush();
+					delay(100);
+					client.stop();
 				}
 
+			} // else not sent
 
-				client.flush();
-				delay(100);
-				client.stop();
-			}
 			if (HasUnsentItems) {
 				// if we can't send one, we probably can't send any others, so give up
 				Serial.println(F("Giving up..."));
 				break;
 			}
-		}
+		} // for
 
 		if (HasUnsentItems) {
 			Serial.println(F("There are still unsent items!"));
@@ -196,13 +220,18 @@ int SaveUID(String thisUID, String thisMessage) {
 	if (thisUID) {
 		ItemUID newItem;
 		newItem.UID = thisUID;
-//		newItem.MAC = wifiMacAddress();
 		newItem.MSG = thisMessage;
+		newItem.timestamp = millis();
 		newItem.sent = false;
 		QueueOfUID.push_back(newItem);
 
-		Serial.println(F("Queue Size: "));
-		Serial.print(QueueOfUID.size());
+		Serial.println(F(""));
+		Serial.print(F("Added item "));
+		Serial.print(newItem.timestamp);
+		
+		Serial.print(F("; New Queue Size : "));
+		
+		Serial.println(QueueOfUID.size());
 
 		// we'll only try to turn on WiFi when we know we have an item to send
 		if (!WiFiConnected()) {
