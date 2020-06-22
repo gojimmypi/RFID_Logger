@@ -213,7 +213,7 @@ int SendQueue() {
 		Serial.println(F(" Items queued"));
 		return 3;
 	}
-
+	return 0;
 }
 
 int SaveUID(String thisUID, String thisMessage) {
@@ -360,10 +360,10 @@ void wait_ms(int ms_count) {
 	if (this_ms_counter >= (60000 / ms_count) ) { 
 		minutes_uptime++;
 		this_ms_counter = 0;
-		Serial.println("Uptime: " + String(days_uptime) + " days; "
-		                          + String(hours_uptime) + " hours; "
-			                      + String(minutes_uptime) + " minutes. "
-		                          + "Queue Size: " + String(QueueOfUID.size()));
+		TIMER_DEBUG_PRINTLN("Uptime: " + String(days_uptime) + " days; "
+		                               + String(hours_uptime) + " hours; "
+			                           + String(minutes_uptime) + " minutes. "
+		                               + "Queue Size: " + String(QueueOfUID.size()));
 
 		// code that runs every minute
 
@@ -394,14 +394,16 @@ void wait_ms(int ms_count) {
 		hours_uptime = 0;
 
 		// any daily code would go here
+		String dailyCheckin = "Check-in #" + String(days_uptime);
+		SaveUID("00000000", dailyCheckin); // save a marker
 	}
 
 	// CodeDuration is typically 0, as the above will take less than a millisecond, unless data sent to web server
 	unsigned long CodeDuration = millis() - CodeStart;
 
 	if (SentQueue) {
-		Serial.print(F("Code Duration: "));
-		Serial.println(CodeDuration);
+		TIMER_DEBUG_PRINT(F("Code Duration: "));
+		TIMER_DEBUG_PRINTLN(CodeDuration);
 	}
 	if ((CodeDuration >= 0) && (CodeDuration < ms_count)) {
 		int thisDelay = ms_count - CodeDuration;
@@ -413,8 +415,8 @@ void wait_ms(int ms_count) {
 	}
 	else {
 		// no delay, we already spend more time in code than the delay!
-		Serial.print(F("No delay! Duration="));
-		Serial.println(CodeDuration);
+		TIMER_DEBUG_PRINT(F("No delay! Duration="));
+		TIMER_DEBUG_PRINTLN(CodeDuration);
 		this_ms_counter = this_ms_counter + CodeDuration;
 	}
 }
